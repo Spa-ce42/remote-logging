@@ -1,3 +1,3 @@
 # Project exclude paths
 /out/
-/remote-logging-dependencies/target/
+/remote-logging-dependencies/

@@ -6,8 +6,15 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+import java.io.PrintStream;
 
-public class NettyClient {
+/**
+ * Code for testing
+ * Some content will be added to the library, some will be discarded
+ *
+ * @author Keming Fei
+ */
+public class Tests {
     public static void main(String[] args) throws Exception {
         EventLoopGroup group = new NioEventLoopGroup();
 
@@ -22,8 +29,8 @@ public class NettyClient {
                 });
 
         ChannelFuture f = b.connect("localhost", 8080).sync();
-        RemotePrintStream rps = new RemotePrintStream(new RemoteOutputStream(f.channel()));
-        System.setOut(rps);
+
+        System.setOut(new PrintStream(new RemoteOutputStream(f.channel())));
 
         for(int i = 0; i < 100; ++i) {
             System.out.println(i);

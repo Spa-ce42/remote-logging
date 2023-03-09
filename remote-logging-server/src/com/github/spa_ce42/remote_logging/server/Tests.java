@@ -9,7 +9,13 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public class Main {
+/**
+ * Code for testing
+ * Some content will be added to the library, some will be discarded
+ *
+ * @author Keming Fei
+ */
+public class Tests {
     public static void main(String[] args) {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();

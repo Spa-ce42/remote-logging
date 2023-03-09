@@ -1,3 +1,5 @@
+package org.millburn.mhs.remote_logging.client;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;

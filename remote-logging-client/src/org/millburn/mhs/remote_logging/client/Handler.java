@@ -1,3 +1,5 @@
+package org.millburn.mhs.remote_logging.client;
+
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 /**

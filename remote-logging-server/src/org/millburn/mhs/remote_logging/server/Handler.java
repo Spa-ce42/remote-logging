@@ -1,4 +1,4 @@
-package com.github.spa_ce42.remote_logging.server;
+package org.millburn.mhs.remote_logging.server;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

@@ -15,7 +15,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
  *
  * @author Keming Fei
  */
-public class Tests {
+public class ServerTests {
     public static void main(String[] args) {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();

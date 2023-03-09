@@ -14,7 +14,7 @@ import java.io.PrintStream;
  *
  * @author Keming Fei
  */
-public class Tests {
+public class ClientTests {
     public static void main(String[] args) throws Exception {
         EventLoopGroup group = new NioEventLoopGroup();
 

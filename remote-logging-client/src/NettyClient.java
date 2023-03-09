@@ -25,10 +25,12 @@ public class NettyClient {
         RemotePrintStream rps = new RemotePrintStream(new RemoteOutputStream(f.channel()));
         System.setOut(rps);
 
-        System.out.println("Hello world!");
-        System.out.close();
+        for(int i = 0; i < 100; ++i) {
+            System.out.println(i);
+        }
 
-        f.channel().closeFuture().sync();
+        System.out.flush();
+
         group.shutdownGracefully();
     }
 }

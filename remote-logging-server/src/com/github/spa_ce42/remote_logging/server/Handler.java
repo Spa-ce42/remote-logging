@@ -12,7 +12,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
         byte[] b = new byte[stringLength];
         in.readBytes(b);
         String s = new String(b);
-        System.out.println(s);
+        System.out.print(s);
         in.release();
     }
 

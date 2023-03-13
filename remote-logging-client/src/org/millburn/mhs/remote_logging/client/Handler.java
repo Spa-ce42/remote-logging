@@ -14,11 +14,12 @@ public class Handler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if(cause instanceof SocketException) {
-
+            System.out.println("Connection reset with server, attempting to reconnect!");
         }
 
-        System.out.println(cause.getClass());
-        System.out.println("An error occurred, noooo!");
+        ClientTests.rl.connect();
+        System.out.println("The following error has occured: " + cause.getClass());
+        System.out.println("The following was the error message: " + cause.getMessage());
     }
 
     @Override

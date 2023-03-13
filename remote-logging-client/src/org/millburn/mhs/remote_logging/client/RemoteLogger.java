@@ -10,16 +10,25 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.ConnectException;
 
 public class RemoteLogger implements Closeable {
     private final EventLoopGroup eventLoopGroup;
-    private final ChannelFuture cf;
-    private final RemoteOutputStream ros;
+    private ChannelFuture cf;
+    private RemoteOutputStream ros;
+    private final String ip;
+    private final int port;
+    private final String name;
+    private final Bootstrap b;
 
     public RemoteLogger(String ip, int port, String name) {
+        this.ip = ip;
+        this.port = port;
+        this.name = name;
+
         this.eventLoopGroup = new NioEventLoopGroup();
 
-        Bootstrap b = new Bootstrap();
+        b = new Bootstrap();
         b.group(this.eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {
@@ -29,12 +38,67 @@ public class RemoteLogger implements Closeable {
                     }
                 });
 
-        this.cf = b.connect(ip, port);
-        this.ros = new RemoteOutputStream(this.cf.channel());
+        connect();
 
         this.ros.write(MessageType.SPECIFY_NAME);
         this.ros.writeString(name);
         this.ros.flush();
+    }
+
+    public void connect() {
+        // THE GOAL IS TO GET THIS FUNCTION TO WAIT UNTIL THE CONNECTION IS COMPLETELY ESTABLISHED
+        // CURRENTLY IT DOES NOT WORK
+
+//        System.out.println("RNNIGN");
+        while (true) {
+            this.cf = this.b.connect(this.ip, this.port);
+            cf.awaitUninterruptibly();
+
+            assert cf.isDone();
+
+            if (cf.isCancelled()) {
+                System.out.println("Connection Cancelled.");
+            } else if (!cf.isSuccess()) {
+                cf.cause().printStackTrace();
+            } else {
+                System.out.println("Connected");
+                break;
+            }
+        }
+//        cf.awaitUninterruptibly();
+//        System.out.println(cf.channel().isActive());
+//        try {
+//            this.cf = this.b.connect(this.ip, this.port).syncUninterruptibly();
+//        } catch (InterruptedException e) {
+//            System.out.println("Wait was interrupted.");
+//        } catch (ConnectException e) {
+//            System.out.println("Connection refused");
+//        }
+
+//        while (!cf.channel().isActive()) {
+//            try {
+//                System.out.println("Waiting for connection.");
+//                Thread.sleep(1000);
+//                cf.channel().close();
+//                cf.awaitUninterruptibly();
+//                this.cf = this.b.connect(this.ip, this.port);
+//                System.out.println(cf.isDone());
+//                System.out.println(cf.isSuccess());
+////                System.out.println(cf.channel().isOpen());
+//            } catch (InterruptedException e) {
+//                System.out.println("Wait was interrupted.");
+//            }
+//        }
+//        System.out.println("Connected");
+//
+//        this.ros = new RemoteOutputStream(this.cf.channel());
+
+//        while (!cf.channel().isOpen()) {
+//            System.out.println("Connection failed, retrying!");
+//
+//            this.ros = new RemoteOutputStream(this.cf.channel());
+//
+//        }
     }
 
     public void log(String message) {

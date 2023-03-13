@@ -8,7 +8,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.util.Random;
 
 /**
  * Code for testing
@@ -18,28 +21,34 @@ import java.io.PrintStream;
  */
 public class ClientTests {
     public static void main(String[] args) throws Exception {
-        EventLoopGroup group = new NioEventLoopGroup();
+//        System.setOut(new PrintStream(ros)); REMOVED THIS LINE, IDK WHAT IT DID BUT NOW IT WORKS
 
-        Bootstrap b = new Bootstrap();
-        b.group(group)
-                .channel(NioSocketChannel.class)
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel sc) {
-                        sc.pipeline().addLast(new Handler());
-                    }
-                });
 
-        ChannelFuture f = b.connect("localhost", 8080).sync();
-
-        System.setOut(new PrintStream(new RemoteOutputStream(f.channel())));
-
-        for(int i = 0; i < 100; ++i) {
+        /*for(int i = 0; i < 100; ++i) {
             System.out.println(i);
         }
 
-        System.out.flush();
+        System.out.flush();*/
 
-        group.shutdownGracefully();
+        //Currently, the code does not work since Netty breaks large byte arrays into smaller ones.
+
+        // Alex Added this for easier testing
+        /*BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        String text = "";
+        while (!text.equals("exit")) {
+            System.out.print("Enter your text: ");
+            text = reader.readLine();
+            System.out.println("This is the text: " + text);
+            byte[] bytes = (text + "\n").getBytes();
+            System.out.println("String Byte Length: " + bytes.length);
+            ros.write(bytes);
+            ros.flush();
+        }*/
+//        Random r = new Random();
+//        byte[] c = new byte[1000];
+//        r.nextBytes(c);
+//        ros.write(c);
+//        ros.flush();
     }
 }
+

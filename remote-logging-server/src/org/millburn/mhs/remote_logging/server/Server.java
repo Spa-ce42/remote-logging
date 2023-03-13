@@ -9,7 +9,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  *
  * @author Keming Fei
  */
-public class Handler extends ChannelInboundHandlerAdapter {
+public class Server extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf in = (ByteBuf)msg;

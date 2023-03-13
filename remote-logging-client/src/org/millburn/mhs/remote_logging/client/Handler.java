@@ -22,7 +22,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws InterruptedException {
-
+    public void channelInactive(ChannelHandlerContext ctx) {
+        System.out.println("Channel inactive!");
     }
 }

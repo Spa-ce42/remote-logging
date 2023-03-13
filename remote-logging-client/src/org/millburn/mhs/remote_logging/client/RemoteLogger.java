@@ -31,6 +31,16 @@ public class RemoteLogger implements Closeable {
 
         this.cf = b.connect(ip, port);
         this.ros = new RemoteOutputStream(this.cf.channel());
+
+        this.ros.write(MessageType.SPECIFY_NAME);
+        this.ros.writeString(name);
+        this.ros.flush();
+    }
+
+    public void log(String message) {
+        this.ros.write(MessageType.LOG);
+        this.ros.writeString(message);
+        this.ros.flush();
     }
 
     @Override

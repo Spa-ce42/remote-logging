@@ -18,7 +18,7 @@ public class RemoteOutputStream extends OutputStream {
 
     private void reset() {
         this.buffer = UnpooledByteBufAllocator.DEFAULT.directBuffer();
-        this.buffer.writerIndex(4);
+//        this.buffer.writerIndex(4);
     }
 
     /**
@@ -67,20 +67,31 @@ public class RemoteOutputStream extends OutputStream {
     }
 
     /**
+     * Writes a string with the length of string described
+     * @param s a string
+     */
+    public void writeString(String s) {
+        byte[] b = s.getBytes();
+        this.buffer.writeInt(b.length);
+        this.buffer.writeBytes(b);
+    }
+
+    /**
      * Send the data in the following format:
-     *     a 4-byte-long integer that denotes the length of the byte buffer
+     *     (commented out)a 4-byte-long integer that denotes the length of the byte buffer
      *     the byte buffer
      * Resets the buffer
      */
     @Override
-    public void flush() {
+    public void flush() {/*
         int size = this.buffer.writerIndex();
         this.buffer.writerIndex(0);
         this.buffer.writeInt(size - Integer.BYTES);
-        this.buffer.writerIndex(size);
+        this.buffer.writerIndex(size);*/
         this.channel.write(this.buffer);
         this.reset();
         this.channel.flush();
+
     }
 
     /**

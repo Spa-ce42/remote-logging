@@ -21,6 +21,10 @@ import java.util.Random;
  */
 public class ClientTests {
     public static void main(String[] args) throws Exception {
+        RemoteLogger rl = new RemoteLogger("localhost", 8080, "logger");
+        rl.log("hello world!");
+        rl.close();
+
 //        System.setOut(new PrintStream(ros)); REMOVED THIS LINE, IDK WHAT IT DID BUT NOW IT WORKS
 
 

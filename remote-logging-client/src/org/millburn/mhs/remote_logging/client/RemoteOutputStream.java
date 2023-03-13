@@ -16,18 +16,18 @@ public class RemoteOutputStream extends OutputStream {
     private final Channel channel;
     private ByteBuf buffer;
 
-    private void reset() {
-        this.buffer = UnpooledByteBufAllocator.DEFAULT.directBuffer();
-//        this.buffer.writerIndex(4);
-    }
-
     /**
      * Constructs a RemoteOutputStream instance given a channel
+     *
      * @param channel a channel provided by some network connection
      */
     public RemoteOutputStream(Channel channel) {
         this.channel = channel;
         this.reset();
+    }
+
+    private void reset() {
+        this.buffer = UnpooledByteBufAllocator.DEFAULT.directBuffer();
     }
 
     /**
@@ -39,6 +39,7 @@ public class RemoteOutputStream extends OutputStream {
 
     /**
      * Write a single byte to the buffer
+     *
      * @param b a byte
      */
     @Override
@@ -48,7 +49,8 @@ public class RemoteOutputStream extends OutputStream {
 
     /**
      * Write an array of bytes
-     * @param b   the data.
+     *
+     * @param b the data.
      */
     @Override
     public void write(byte[] b) {
@@ -57,9 +59,10 @@ public class RemoteOutputStream extends OutputStream {
 
     /**
      * Write a portion of a byte array
-     * @param b     the data.
-     * @param off   the start offset in the data.
-     * @param len   the number of bytes to write.
+     *
+     * @param b   the data.
+     * @param off the start offset in the data.
+     * @param len the number of bytes to write.
      */
     @Override
     public void write(byte[] b, int off, int len) {
@@ -68,6 +71,7 @@ public class RemoteOutputStream extends OutputStream {
 
     /**
      * Writes a string with the length of string described
+     *
      * @param s a string
      */
     public void writeString(String s) {
@@ -77,21 +81,14 @@ public class RemoteOutputStream extends OutputStream {
     }
 
     /**
-     * Send the data in the following format:
-     *     (commented out)a 4-byte-long integer that denotes the length of the byte buffer
-     *     the byte buffer
+     * Sends the byte buffer
      * Resets the buffer
      */
     @Override
-    public void flush() {/*
-        int size = this.buffer.writerIndex();
-        this.buffer.writerIndex(0);
-        this.buffer.writeInt(size - Integer.BYTES);
-        this.buffer.writerIndex(size);*/
+    public void flush() {
         this.channel.write(this.buffer);
         this.reset();
         this.channel.flush();
-
     }
 
     /**

@@ -10,16 +10,15 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.ConnectException;
 
 public class RemoteLogger implements Closeable {
     private final EventLoopGroup eventLoopGroup;
-    private ChannelFuture cf;
-    private RemoteOutputStream ros;
     private final String ip;
     private final int port;
     private final String name;
     private final Bootstrap b;
+    private ChannelFuture cf;
+    private RemoteOutputStream ros;
 
     public RemoteLogger(String ip, int port, String name) {
         this.ip = ip;
@@ -50,15 +49,15 @@ public class RemoteLogger implements Closeable {
         // CURRENTLY IT DOES NOT WORK
 
 //        System.out.println("RNNIGN");
-        while (true) {
+        while(true) {
             this.cf = this.b.connect(this.ip, this.port);
             cf.awaitUninterruptibly();
 
             assert cf.isDone();
 
-            if (cf.isCancelled()) {
+            if(cf.isCancelled()) {
                 System.out.println("Connection Cancelled.");
-            } else if (!cf.isSuccess()) {
+            } else if(!cf.isSuccess()) {
                 cf.cause().printStackTrace();
             } else {
                 System.out.println("Connected");

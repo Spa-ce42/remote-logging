@@ -22,6 +22,7 @@ public class ClientTests {
             System.out.println("String Byte Length: " + bytes.length);
             rl.log(text);
         }
+
         rl.close();
     }
 }

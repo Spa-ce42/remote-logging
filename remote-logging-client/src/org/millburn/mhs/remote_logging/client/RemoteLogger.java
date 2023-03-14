@@ -7,9 +7,12 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.DefaultThreadFactory;
+import io.netty.util.concurrent.ScheduledFuture;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class RemoteLogger implements Closeable {
     private final EventLoopGroup eventLoopGroup;
@@ -17,15 +20,15 @@ public class RemoteLogger implements Closeable {
     private final int port;
     private final String name;
     private final Bootstrap b;
-    private ChannelFuture cf;
     private RemoteOutputStream ros;
+    private ScheduledFuture<?> reconnectFuture;
 
     public RemoteLogger(String ip, int port, String name) {
         this.ip = ip;
         this.port = port;
         this.name = name;
 
-        this.eventLoopGroup = new NioEventLoopGroup();
+        this.eventLoopGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("EventLoopGroupThreadCreator", true));
 
         b = new Bootstrap();
         b.group(this.eventLoopGroup)
@@ -36,19 +39,34 @@ public class RemoteLogger implements Closeable {
                         socketChannel.pipeline().addLast(new Handler(RemoteLogger.this));
                     }
                 });
-        connect();
 
+        attemptToReconnect();
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    private void connect() {
+        ChannelFuture cf = this.b.connect(this.ip, this.port);
+        this.ros = new RemoteOutputStream(cf.channel());
         this.ros.write(MessageType.SPECIFY_NAME);
         this.ros.writeString(name);
         this.ros.flush();
+
+        if (cf.isSuccess() && this.reconnectFuture != null) {
+            this.reconnectFuture.cancel(true);
+        }
     }
 
-    public void connect() {
+    public void attemptToReconnect() {
         // THE GOAL IS TO GET THIS FUNCTION TO WAIT UNTIL THE CONNECTION IS COMPLETELY ESTABLISHED
         // CURRENTLY IT DOES NOT WORK
 
 //        System.out.println("RNNIGN");
-        while(true) {
+        this.reconnectFuture = this.eventLoopGroup.scheduleAtFixedRate(this::connect, 0, 1, TimeUnit.SECONDS);
+
+        /*while(true) {
             this.cf = this.b.connect(this.ip, this.port);
             cf.awaitUninterruptibly();
 
@@ -62,7 +80,7 @@ public class RemoteLogger implements Closeable {
                 System.out.println("Connected");
                 break;
             }
-        }
+        }*/
 //        cf.awaitUninterruptibly();
 //        System.out.println(cf.channel().isActive());
 //        try {

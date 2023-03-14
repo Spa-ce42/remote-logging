@@ -23,7 +23,12 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        this.rl.connect();
+        this.rl.attemptToReconnect();
         System.out.println("Channel inactive!");
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) {
+        System.out.println("Unregistering channel");
     }
 }

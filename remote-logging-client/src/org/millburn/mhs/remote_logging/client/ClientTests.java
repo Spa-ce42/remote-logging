@@ -10,10 +10,8 @@ import java.io.InputStreamReader;
  * @author Keming Fei
  */
 public class ClientTests {
-    public static RemoteLogger rl;
-
     public static void main(String[] args) throws Exception {
-        rl = new RemoteLogger("localhost", 8080, "logger");
+        RemoteLogger rl = new RemoteLogger("localhost", 8080, "logger");
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String text = "";

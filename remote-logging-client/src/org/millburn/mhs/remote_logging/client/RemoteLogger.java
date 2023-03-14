@@ -32,11 +32,10 @@ public class RemoteLogger implements Closeable {
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    public void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast(new Handler());
+                    public void initChannel(SocketChannel socketChannel) {
+                        socketChannel.pipeline().addLast(new Handler(RemoteLogger.this));
                     }
                 });
-
         connect();
 
         this.ros.write(MessageType.SPECIFY_NAME);

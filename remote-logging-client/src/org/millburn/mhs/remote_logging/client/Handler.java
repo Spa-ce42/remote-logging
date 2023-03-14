@@ -9,6 +9,12 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  * @author Keming Fei
  */
 public class Handler extends ChannelInboundHandlerAdapter {
+    private final RemoteLogger rl;
+
+    public Handler(RemoteLogger rl) {
+        this.rl = rl;
+    }
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         System.out.println("The following error has occured: " + cause.getClass());
@@ -17,7 +23,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        ClientTests.rl.connect();
+        this.rl.connect();
         System.out.println("Channel inactive!");
     }
 }

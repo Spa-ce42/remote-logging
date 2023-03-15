@@ -1,5 +1,7 @@
 package org.millburn.mhs.remote_logging.client;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -16,6 +18,21 @@ public class Handler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
+    public void channelRegistered(ChannelHandlerContext ctx) {
+        System.out.println("Handler.channelRegistered");
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        ByteBuf bb = UnpooledByteBufAllocator.DEFAULT.directBuffer();
+        bb.writeByte(MessageType.SPECIFY_NAME);
+        byte[] b = this.rl.getName().getBytes();
+        bb.writeInt(b.length);
+        bb.writeBytes(b);
+        ctx.channel().writeAndFlush(bb);
+    }
+
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         System.out.println("The following error has occured: " + cause.getClass());
         System.out.println("The following was the error message: " + cause.getMessage());
@@ -23,12 +40,12 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
+        System.out.println("Handler.channelInactive");
         this.rl.attemptToReconnect();
-        System.out.println("Channel inactive!");
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) {
-        System.out.println("Unregistering channel");
+        System.out.println("Handler.channelUnregistered");
     }
 }

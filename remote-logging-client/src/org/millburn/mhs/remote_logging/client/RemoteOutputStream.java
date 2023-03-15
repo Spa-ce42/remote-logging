@@ -98,4 +98,8 @@ public class RemoteOutputStream extends OutputStream {
     public void close() {
         this.channel.close();
     }
+
+    public boolean isActive() {
+        return this.channel.isActive();
+    }
 }

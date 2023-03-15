@@ -40,7 +40,7 @@ public class RemoteLogger implements Closeable {
                     }
                 });
 
-        attemptToReconnect();
+        this.attemptToReconnect();
     }
 
     public String getName() {
@@ -50,12 +50,13 @@ public class RemoteLogger implements Closeable {
     private void connect() {
         ChannelFuture cf = this.b.connect(this.ip, this.port);
         this.ros = new RemoteOutputStream(cf.channel());
-        this.ros.write(MessageType.SPECIFY_NAME);
-        this.ros.writeString(name);
-        this.ros.flush();
 
-        if (cf.isSuccess() && this.reconnectFuture != null) {
-            this.reconnectFuture.cancel(true);
+        if (this.ros.isActive() && this.reconnectFuture != null) {
+            this.ros.write(MessageType.SPECIFY_NAME);
+            this.ros.writeString(name);
+            this.ros.flush();
+            this.reconnectFuture.cancel(false);
+            this.reconnectFuture = null;
         }
     }
 
@@ -64,7 +65,9 @@ public class RemoteLogger implements Closeable {
         // CURRENTLY IT DOES NOT WORK
 
 //        System.out.println("RNNIGN");
-        this.reconnectFuture = this.eventLoopGroup.scheduleAtFixedRate(this::connect, 0, 1, TimeUnit.SECONDS);
+        if(this.reconnectFuture == null) {
+            this.reconnectFuture = this.eventLoopGroup.scheduleAtFixedRate(this::connect, 0, 1, TimeUnit.SECONDS);
+        }
 
         /*while(true) {
             this.cf = this.b.connect(this.ip, this.port);
@@ -124,7 +127,7 @@ public class RemoteLogger implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         this.eventLoopGroup.shutdownGracefully();
     }
 }

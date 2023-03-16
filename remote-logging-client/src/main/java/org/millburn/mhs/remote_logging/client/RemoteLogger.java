@@ -40,7 +40,8 @@ public class RemoteLogger implements Closeable {
                     }
                 });
 
-        this.attemptToReconnect();
+//        this.attemptToReconnect();
+        this.connect();
     }
 
     public String getName() {

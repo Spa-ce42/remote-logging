@@ -41,7 +41,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.println("Handler.channelInactive");
-        this.rl.attemptToReconnect();
+//        this.rl.attemptToReconnect();
     }
 
     @Override

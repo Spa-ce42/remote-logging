@@ -17,13 +17,16 @@ public class Handler extends ChannelInboundHandlerAdapter {
         this.rl = rl;
     }
 
-    @Override
-    public void channelRegistered(ChannelHandlerContext ctx) {
-        System.out.println("Handler.channelRegistered");
-    }
+//    @Override
+//    public void channelRegistered(ChannelHandlerContext ctx) {
+//        System.out.println(ctx.channel());
+//        System.out.println("Handler.channelRegistered");
+//    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+        this.rl.setConnected(true);
+        System.out.println("Reconnected!");
         ByteBuf bb = UnpooledByteBufAllocator.DEFAULT.directBuffer();
         bb.writeByte(MessageType.SPECIFY_NAME);
         byte[] b = this.rl.getName().getBytes();
@@ -40,12 +43,14 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        System.out.println("Handler.channelInactive");
-//        this.rl.attemptToReconnect();
+        System.out.println("Starting the connection loop!");
+        this.rl.setConnected(false);
+        this.rl.attemptToReconnect();
     }
 
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) {
-        System.out.println("Handler.channelUnregistered");
-    }
+//    @Override
+//    public void channelUnregistered(ChannelHandlerContext ctx) {
+//        System.out.println("Handler.channelUnregistered");
+//        System.out.println(ctx.channel());
+//    }
 }

@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import java.net.SocketException;
 import java.time.Instant;
 
 /**
@@ -14,6 +15,8 @@ import java.time.Instant;
 public class Server extends ChannelInboundHandlerAdapter {
     private final Object LOCK = new Object();
     private String loggerName;
+    private boolean accepted = false;
+    private final String key = "1234";
     private FileAppender fa;
 
     /**
@@ -39,6 +42,29 @@ public class Server extends ChannelInboundHandlerAdapter {
             this.fa = new FileAppender((this.loggerName + "-" + Instant.now() + ".log").replace(':', '-'));
         }
 
+        if (!accepted) {
+            ByteBuf in = (ByteBuf) msg;
+            byte messageType = in.readByte();
+            if (messageType != MessageType.KEY) {
+                System.err.println("The client did not send in the key! Abort!");
+                ctx.channel().close();
+                return;
+            }
+
+            int stringLength = in.readInt();
+            byte[] b = new byte[stringLength];
+            in.readBytes(b);
+            if (!key.equals(new String(b))) {
+                System.err.println("The client did not send in the correct key! Abort!");
+                ctx.channel().close();
+                return;
+            } else {
+                accepted = true;
+            }
+        }
+
+        System.out.println("Connection established with: " + this.loggerName);
+
         ByteBuf in = (ByteBuf) msg;
 
         while(in.isReadable()) {
@@ -63,7 +89,11 @@ public class Server extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        if (cause instanceof SocketException) {
+            System.out.println("Client connection closed!");
+        } else {
+            cause.printStackTrace();
+        }
     }
 
     @Override

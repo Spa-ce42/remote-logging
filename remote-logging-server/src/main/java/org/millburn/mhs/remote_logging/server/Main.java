@@ -21,8 +21,8 @@ public class Main implements Closeable {
         this.ss = new SuperServer(
                 this.getRequiredStringProperty("ip"),
                 this.getRequiredIntProperty("port"),
-                this.getOptionalStringProperty("logFileDirectory", ""),
-                this.getOptionalStringProperty("desiredKey", "1234")
+                this.getOptionalStringProperty("log_file_directory", ""),
+                this.getOptionalStringProperty("desired_key", "")
         );
     }
 

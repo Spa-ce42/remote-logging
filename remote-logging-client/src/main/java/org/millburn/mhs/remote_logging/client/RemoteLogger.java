@@ -11,6 +11,8 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.ScheduledFuture;
 
 import java.io.Closeable;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.concurrent.TimeUnit;
 
 public class RemoteLogger implements Closeable {
@@ -86,6 +88,74 @@ public class RemoteLogger implements Closeable {
         this.ros.write(MessageType.LOG);
         this.ros.writeString(message);
         this.ros.flush();
+    }
+
+    public void log(Object x) {
+        this.log(x.toString());
+    }
+
+    private class RemoteLoggerPrintStream extends PrintStream {
+        public RemoteLoggerPrintStream(OutputStream out) {
+            super(out);
+        }
+
+        public RemoteLoggerPrintStream() {
+            this(RemoteLogger.this.ros);
+        }
+
+        @Override
+        public void println() {
+            RemoteLogger.this.log("");
+        }
+
+        @Override
+        public void println(boolean x) {
+            RemoteLogger.this.log(x);
+        }
+
+        @Override
+        public void println(char x) {
+            RemoteLogger.this.log(x);
+        }
+
+        @Override
+        public void println(int x) {
+            RemoteLogger.this.log(x);
+        }
+
+        @Override
+        public void println(long x) {
+            RemoteLogger.this.log(x);
+        }
+
+        @Override
+        public void println(float x) {
+            RemoteLogger.this.log(x);
+        }
+
+        @Override
+        public void println(double x) {
+            RemoteLogger.this.log(x);
+        }
+
+        @Override
+        public void println(char[] x) {
+            RemoteLogger.this.log(x);
+        }
+
+        @Override
+        public void println(String x) {
+            RemoteLogger.this.log(x);
+        }
+
+        @Override
+        public void println(Object x) {
+            RemoteLogger.this.log(x);
+        }
+    }
+
+    public PrintStream getAsPrintStream() {
+        return new RemoteLoggerPrintStream();
     }
 
     @Override

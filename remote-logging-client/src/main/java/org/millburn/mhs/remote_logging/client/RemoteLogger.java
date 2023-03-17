@@ -53,6 +53,7 @@ public class RemoteLogger implements Closeable {
         this.name = s;
         this.ros.write(MessageType.SPECIFY_NAME);
         this.ros.writeString(this.name);
+        this.ros.flush();
     }
 
     void setConnected(boolean v) {

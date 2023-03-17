@@ -1,2 +1,4 @@
 /.idea/
 /out/
+/remote-logging-server/target
+/remote-logging-client/target

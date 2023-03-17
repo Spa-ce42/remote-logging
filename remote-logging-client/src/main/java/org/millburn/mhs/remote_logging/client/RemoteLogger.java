@@ -17,7 +17,7 @@ public class RemoteLogger implements Closeable {
     private final EventLoopGroup eventLoopGroup;
     private final String ip;
     private final int port;
-    private final String name;
+    private String name;
     private final Bootstrap b;
     private RemoteOutputStream ros;
     private volatile boolean connected;
@@ -49,7 +49,13 @@ public class RemoteLogger implements Closeable {
         return this.name;
     }
 
-    public void setConnected(boolean v) {
+    public void setName(String s) {
+        this.name = s;
+        this.ros.write(MessageType.SPECIFY_NAME);
+        this.ros.writeString(this.name);
+    }
+
+    void setConnected(boolean v) {
         this.connected = v;
     }
 
@@ -72,7 +78,7 @@ public class RemoteLogger implements Closeable {
             return;
         }
 
-        this.eventLoopGroup.scheduleWithFixedDelay(this::connect, 0, 1, TimeUnit.SECONDS);
+        this.reconnectFuture = this.eventLoopGroup.scheduleWithFixedDelay(this::connect, 0, 1, TimeUnit.SECONDS);
     }
 
     public void log(String message) {

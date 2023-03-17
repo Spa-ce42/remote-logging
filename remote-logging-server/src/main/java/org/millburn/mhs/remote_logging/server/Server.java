@@ -75,7 +75,14 @@ public class Server extends ChannelInboundHandlerAdapter {
 
             switch(messageType) {
                 case MessageType.SPECIFY_NAME -> {
-
+                    int stringLength = in.readInt();
+                    byte[] b = new byte[stringLength];
+                    in.readBytes(b);
+                    this.loggerName = new String(b);
+                    System.out.println(this.loggerName + ": # The client has changed its name to: " + this.loggerName);
+                    this.fa.appendLine("# The client has changed its name to: " + this.loggerName);
+                    this.fa.close();
+                    this.fa = this.faf.createFileAppender(this.loggerName);
                 }
 
                 case MessageType.LOG -> {

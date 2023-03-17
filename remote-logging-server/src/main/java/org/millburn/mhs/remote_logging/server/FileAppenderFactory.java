@@ -25,7 +25,7 @@ public class FileAppenderFactory {
     }
 
     public String getLogFileDirectoryString() {
-        return this.logFileDirectory.getAbsolutePath() + File.separatorChar;
+        return this.logFileDirectory.getPath() + File.separatorChar;
     }
 
     public FileAppender createFileAppender(String loggerName) {

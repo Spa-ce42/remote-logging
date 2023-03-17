@@ -21,7 +21,7 @@ public class FileAppenderFactory {
             throw new IllegalArgumentException(f + " exists and is a file.");
         }
 
-
+        this.logFileDirectory = f;
     }
 
     public String getLogFileDirectoryString() {

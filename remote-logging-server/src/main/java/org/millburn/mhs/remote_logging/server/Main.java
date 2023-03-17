@@ -15,9 +15,13 @@ public class Main implements Closeable {
     private final SuperServer ss;
     private final Properties metadata;
 
-    public Main(String propertiesPath) throws IOException {
+    public Main(String propertiesPath) {
         this.metadata = new Properties();
-        this.metadata.load(new FileInputStream(propertiesPath));
+        try {
+            this.metadata.load(new FileInputStream(propertiesPath));
+        } catch(IOException e) {
+            throw new UncheckedIOException(e);
+        }
 
         String ip = this.getRequiredStringProperty("ip");
         int port = this.getRequiredIntProperty("port");
@@ -33,11 +37,12 @@ public class Main implements Closeable {
     }
 
     public static void main(String[] args) {
-        try(Main main = new Main(args[0])) {
-            main.run();
-        } catch(IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        Main main = new Main(args[0]);
+        main.run();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            main.ss.close();
+            System.out.println("Exiting...");
+        }));
     }
 
     public String getRequiredStringProperty(String key) {

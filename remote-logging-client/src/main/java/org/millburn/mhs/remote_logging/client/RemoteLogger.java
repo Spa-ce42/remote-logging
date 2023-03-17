@@ -11,7 +11,6 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.ScheduledFuture;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class RemoteLogger implements Closeable {
@@ -50,10 +49,12 @@ public class RemoteLogger implements Closeable {
         return this.name;
     }
 
-    public void setConnected(boolean v) {this.connected = v;}
+    public void setConnected(boolean v) {
+        this.connected = v;
+    }
 
     private void connect() {
-        if (this.connected) {
+        if(this.connected) {
             this.reconnectFuture.cancel(true);
             return;
         }
@@ -61,13 +62,13 @@ public class RemoteLogger implements Closeable {
         ChannelFuture cf = this.b.connect(this.ip, this.port);
         this.ros = new RemoteOutputStream(cf.channel());
         System.out.println("Retrying Connection!");
-        if (this.connected) {
+        if(this.connected) {
             this.reconnectFuture.cancel(true);
         }
     }
 
     public void attemptToReconnect() {
-        if (this.connected) {
+        if(this.connected) {
             return;
         }
 

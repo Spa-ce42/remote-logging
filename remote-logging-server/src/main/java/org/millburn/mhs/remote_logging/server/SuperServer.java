@@ -24,7 +24,7 @@ public class SuperServer implements Closeable {
     private final String desiredKey;
 
     /**
-     * @param ip an IPv4 without port
+     * @param ip   an IPv4 without port
      * @param port a port
      */
     public SuperServer(String ip, int port, String logFileDirectory, String desiredKey) {
@@ -54,7 +54,7 @@ public class SuperServer implements Closeable {
     public void listen() {
         try {
             this.channelFuture.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
+        } catch(InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

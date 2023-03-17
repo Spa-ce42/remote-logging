@@ -12,36 +12,37 @@ import java.io.UncheckedIOException;
  * @author Keming Fei
  */
 public class FileAppender implements Closeable {
-    private final File f;
     private final FileWriter fw;
 
     /**
      * @param path the path to a file, the file can either exist or not exist
      */
     public FileAppender(String path) {
-        this.f = new File(path);
+        File f = new File(path).getAbsoluteFile();
 
         try {
-            this.fw = new FileWriter(this.f, true);
-        } catch (IOException e) {
+            this.fw = new FileWriter(f, true);
+        } catch(IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     /**
      * Append the string
+     *
      * @param s the string
      */
     public void append(String s) {
         try {
             this.fw.append(s);
-        } catch (IOException e) {
+        } catch(IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     /**
      * Append the string with a new line
+     *
      * @param s the string
      */
     public void appendLine(String s) {
@@ -55,6 +56,7 @@ public class FileAppender implements Closeable {
 
     /**
      * Closes the file
+     *
      * @throws IOException if an IO error occur
      */
     @Override

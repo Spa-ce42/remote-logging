@@ -1,7 +1,6 @@
 package org.millburn.mhs.remote_logging.server;
 
 import java.io.File;
-import java.io.UncheckedIOException;
 import java.time.Instant;
 
 public class FileAppenderFactory {
@@ -15,10 +14,6 @@ public class FileAppenderFactory {
         return this.logFileDirectory;
     }
 
-    public String getLogFileDirectoryString() {
-        return this.logFileDirectory.getAbsolutePath() + File.separatorChar;
-    }
-
     public void setLogFileDirectory(String s) {
         File f = new File(s);
 
@@ -27,6 +22,10 @@ public class FileAppenderFactory {
         }
 
 
+    }
+
+    public String getLogFileDirectoryString() {
+        return this.logFileDirectory.getAbsolutePath() + File.separatorChar;
     }
 
     public FileAppender createFileAppender(String loggerName) {

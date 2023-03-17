@@ -1,6 +1,9 @@
 package org.millburn.mhs.remote_logging.server;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Properties;
 
 /**
@@ -11,6 +14,25 @@ import java.util.Properties;
 public class Main implements Closeable {
     private final SuperServer ss;
     private final Properties metadata;
+
+    public Main(String propertiesPath) throws IOException {
+        this.metadata = new Properties();
+        this.metadata.load(new FileInputStream(propertiesPath));
+        this.ss = new SuperServer(
+                this.getRequiredStringProperty("ip"),
+                this.getRequiredIntProperty("port"),
+                this.getOptionalStringProperty("logFileDirectory", ""),
+                this.getOptionalStringProperty("desiredKey", "1234")
+        );
+    }
+
+    public static void main(String[] args) {
+        try(Main main = new Main(args[0])) {
+            main.run();
+        } catch(IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
     public String getRequiredStringProperty(String key) {
         String s = this.metadata.getProperty(key);
@@ -31,27 +53,8 @@ public class Main implements Closeable {
         return this.metadata.getProperty(key, defaultValue);
     }
 
-    public Main(String propertiesPath) throws IOException {
-        this.metadata = new Properties();
-        this.metadata.load(new FileInputStream(propertiesPath));
-        this.ss = new SuperServer(
-                this.getRequiredStringProperty("ip"),
-                this.getRequiredIntProperty("port"),
-                this.getOptionalStringProperty("logFileDirectory", ""),
-                this.getOptionalStringProperty("desiredKey", "1234")
-        );
-    }
-
     public void run() {
         this.ss.listen();
-    }
-
-    public static void main(String[] args) {
-        try(Main main = new Main(args[0])) {
-            main.run();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 
     @Override

@@ -5,7 +5,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import java.net.SocketException;
-import java.time.Instant;
 
 /**
  * A class required by Netty, created for each connection to the super server
@@ -14,10 +13,10 @@ import java.time.Instant;
  */
 public class Server extends ChannelInboundHandlerAdapter {
     private final FileAppenderFactory faf;
+    private final String desiredKey;
     private String loggerName;
     private boolean accepted = false;
     private FileAppender fa;
-    private final String desiredKey;
 
     public Server(FileAppenderFactory faf, String desiredKey) {
         this.faf = faf;
@@ -31,10 +30,10 @@ public class Server extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (this.loggerName == null) {
-            ByteBuf in = (ByteBuf) msg;
+        if(this.loggerName == null) {
+            ByteBuf in = (ByteBuf)msg;
             byte messageType = in.readByte();
-            if (messageType != MessageType.SPECIFY_NAME) {
+            if(messageType != MessageType.SPECIFY_NAME) {
                 System.err.println("The client did not send in a name! Abort!");
                 ctx.channel().close();
                 return;
@@ -47,10 +46,10 @@ public class Server extends ChannelInboundHandlerAdapter {
             this.fa = this.faf.createFileAppender(this.loggerName);
         }
 
-        if (!this.accepted) {
-            ByteBuf in = (ByteBuf) msg;
+        if(!this.accepted) {
+            ByteBuf in = (ByteBuf)msg;
             byte messageType = in.readByte();
-            if (messageType != MessageType.KEY) {
+            if(messageType != MessageType.KEY) {
                 System.err.println("The client did not send in the key! Abort!");
                 ctx.channel().close();
                 return;
@@ -59,7 +58,7 @@ public class Server extends ChannelInboundHandlerAdapter {
             int stringLength = in.readInt();
             byte[] b = new byte[stringLength];
             in.readBytes(b);
-            if (!this.desiredKey.equals(new String(b))) {
+            if(!this.desiredKey.equals(new String(b))) {
                 System.err.println("The client did not send in the correct key! Abort!");
                 ctx.channel().close();
                 return;
@@ -69,12 +68,12 @@ public class Server extends ChannelInboundHandlerAdapter {
             System.out.println("Connection established with: " + this.loggerName);
         }
 
-        ByteBuf in = (ByteBuf) msg;
+        ByteBuf in = (ByteBuf)msg;
 
         while(in.isReadable()) {
             byte messageType = in.readByte();
 
-            switch (messageType) {
+            switch(messageType) {
                 case MessageType.SPECIFY_NAME -> {
 
                 }
@@ -94,7 +93,7 @@ public class Server extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        if (cause instanceof SocketException) {
+        if(cause instanceof SocketException) {
             System.out.println("Client connection closed!");
         } else {
             cause.printStackTrace();

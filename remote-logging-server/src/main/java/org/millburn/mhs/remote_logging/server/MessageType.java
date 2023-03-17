@@ -17,7 +17,7 @@ public final class MessageType {
      */
     public static final byte LOG = 1;
     /**
-     * format: KEY [key]
+     * format: KEY [string]
      * Must be sent as the second message to verify with the server that the client is safe
      */
     public static final byte KEY = 2;

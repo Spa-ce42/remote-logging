@@ -21,8 +21,8 @@ public class RemoteLogger implements Closeable {
     private final String name;
     private final Bootstrap b;
     private RemoteOutputStream ros;
-    private boolean connected;
-    private ScheduledFuture<?> reconnectFuture;
+    private volatile boolean connected;
+    private volatile ScheduledFuture<?> reconnectFuture;
 
     public RemoteLogger(String ip, int port, String name) {
         this.ip = ip;
@@ -53,22 +53,25 @@ public class RemoteLogger implements Closeable {
     public void setConnected(boolean v) {this.connected = v;}
 
     private void connect() {
+        if (this.connected) {
+            this.reconnectFuture.cancel(true);
+            return;
+        }
+
         ChannelFuture cf = this.b.connect(this.ip, this.port);
         this.ros = new RemoteOutputStream(cf.channel());
         System.out.println("Retrying Connection!");
-        if (this.connected && this.reconnectFuture != null) {
-            this.ros.write(MessageType.SPECIFY_NAME);
-            this.ros.writeString(name);
-            this.ros.flush();
-            this.reconnectFuture.cancel(false);
-            this.reconnectFuture = null;
+        if (this.connected) {
+            this.reconnectFuture.cancel(true);
         }
     }
 
     public void attemptToReconnect() {
-        if(this.reconnectFuture == null) {
-            this.reconnectFuture = this.eventLoopGroup.scheduleAtFixedRate(this::connect, 0, 1, TimeUnit.SECONDS);
+        if (this.connected) {
+            return;
         }
+
+        this.eventLoopGroup.scheduleWithFixedDelay(this::connect, 0, 1, TimeUnit.SECONDS);
     }
 
     public void log(String message) {

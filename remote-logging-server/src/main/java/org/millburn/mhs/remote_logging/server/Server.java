@@ -13,7 +13,6 @@ import java.time.Instant;
  * @author Keming Fei
  */
 public class Server extends ChannelInboundHandlerAdapter {
-    private final Object LOCK = new Object();
     private String loggerName;
     private boolean accepted = false;
     private final String key = "1234";

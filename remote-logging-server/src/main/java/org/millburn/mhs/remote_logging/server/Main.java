@@ -18,12 +18,18 @@ public class Main implements Closeable {
     public Main(String propertiesPath) throws IOException {
         this.metadata = new Properties();
         this.metadata.load(new FileInputStream(propertiesPath));
-        this.ss = new SuperServer(
-                this.getRequiredStringProperty("ip"),
-                this.getRequiredIntProperty("port"),
-                this.getOptionalStringProperty("log_file_directory", ""),
-                this.getOptionalStringProperty("desired_key", "")
-        );
+
+        String ip = this.getRequiredStringProperty("ip");
+        int port = this.getRequiredIntProperty("port");
+        String logFileDirectory = this.getOptionalStringProperty("log_file_directory", "");
+        String desiredKey = this.getOptionalStringProperty("desired_connection_key", "");
+
+        System.out.println("ip: " + ip);
+        System.out.println("port: " + port);
+        System.out.println("log_file_directory: " + logFileDirectory);
+        System.out.println("desired_connection_key: " + desiredKey);
+        System.out.println("Initializing the super server...");
+        this.ss = new SuperServer(ip, port, logFileDirectory, desiredKey);
     }
 
     public static void main(String[] args) {
@@ -54,6 +60,7 @@ public class Main implements Closeable {
     }
 
     public void run() {
+        System.out.println("Listening for connections...");
         this.ss.listen();
     }
 

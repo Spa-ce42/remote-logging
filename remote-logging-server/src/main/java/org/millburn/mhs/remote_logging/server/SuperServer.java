@@ -20,26 +20,32 @@ public class SuperServer implements Closeable {
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final ChannelFuture channelFuture;
+    private final FileAppenderFactory faf;
+    private final String desiredKey;
 
     /**
-     * @param ip an IPv4 address, cannot include ports
-     * @param port the port
+     * @param ip an IPv4 without port
+     * @param port a port
      */
-    public SuperServer(String ip, int port) {
+    public SuperServer(String ip, int port, String logFileDirectory, String desiredKey) {
         this.bossGroup = new NioEventLoopGroup();
         this.workerGroup = new NioEventLoopGroup();
         ServerBootstrap sb = new ServerBootstrap();
+
         sb.group(this.bossGroup, this.workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel sc) {
-                        sc.pipeline().addLast(new Server());
+                        sc.pipeline().addLast(new Server(SuperServer.this.faf, SuperServer.this.desiredKey));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
         this.channelFuture = sb.bind(ip, port);
+        this.faf = new FileAppenderFactory();
+        this.faf.setLogFileDirectory(logFileDirectory);
+        this.desiredKey = desiredKey;
     }
 
     /**

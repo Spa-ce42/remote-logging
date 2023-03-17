@@ -13,10 +13,16 @@ import java.time.Instant;
  * @author Keming Fei, Alex Kolodkin
  */
 public class Server extends ChannelInboundHandlerAdapter {
+    private final FileAppenderFactory faf;
     private String loggerName;
     private boolean accepted = false;
-    private final String key = "1234";
     private FileAppender fa;
+    private final String desiredKey;
+
+    public Server(FileAppenderFactory faf, String desiredKey) {
+        this.faf = faf;
+        this.desiredKey = desiredKey;
+    }
 
     /**
      * Handles incoming messages from Client
@@ -38,10 +44,10 @@ public class Server extends ChannelInboundHandlerAdapter {
             byte[] b = new byte[stringLength];
             in.readBytes(b);
             this.loggerName = new String(b);
-            this.fa = new FileAppender((this.loggerName + "-" + Instant.now() + ".log").replace(':', '-'));
+            this.fa = this.faf.createFileAppender(this.loggerName);
         }
 
-        if (!accepted) {
+        if (!this.accepted) {
             ByteBuf in = (ByteBuf) msg;
             byte messageType = in.readByte();
             if (messageType != MessageType.KEY) {
@@ -53,12 +59,12 @@ public class Server extends ChannelInboundHandlerAdapter {
             int stringLength = in.readInt();
             byte[] b = new byte[stringLength];
             in.readBytes(b);
-            if (!key.equals(new String(b))) {
+            if (!this.desiredKey.equals(new String(b))) {
                 System.err.println("The client did not send in the correct key! Abort!");
                 ctx.channel().close();
                 return;
             } else {
-                accepted = true;
+                this.accepted = true;
             }
             System.out.println("Connection established with: " + this.loggerName);
         }

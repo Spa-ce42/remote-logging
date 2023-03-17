@@ -3,7 +3,7 @@ package org.millburn.mhs.remote_logging.client;
 /**
  * Describes types of message a server/client can receive/send
  *
- * @author Keming Fei
+ * @author Keming Fei, Alex Kolodkin
  */
 public final class MessageType {
     /**

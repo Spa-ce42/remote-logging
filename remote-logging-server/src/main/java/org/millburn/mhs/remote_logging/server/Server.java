@@ -10,7 +10,7 @@ import java.time.Instant;
 /**
  * A class required by Netty, created for each connection to the super server
  *
- * @author Keming Fei
+ * @author Keming Fei, Alex Kolodkin
  */
 public class Server extends ChannelInboundHandlerAdapter {
     private String loggerName;
@@ -24,7 +24,7 @@ public class Server extends ChannelInboundHandlerAdapter {
      * If the said message with the said requirement was not met, the connection to the Client will stop
      */
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (this.loggerName == null) {
             ByteBuf in = (ByteBuf) msg;
             byte messageType = in.readByte();
@@ -60,9 +60,8 @@ public class Server extends ChannelInboundHandlerAdapter {
             } else {
                 accepted = true;
             }
+            System.out.println("Connection established with: " + this.loggerName);
         }
-
-        System.out.println("Connection established with: " + this.loggerName);
 
         ByteBuf in = (ByteBuf) msg;
 
@@ -81,6 +80,7 @@ public class Server extends ChannelInboundHandlerAdapter {
                     String message = new String(b);
                     System.out.println(this.loggerName + ": " + message);
                     this.fa.appendLine(message);
+                    this.fa.flush();
                 }
             }
         }

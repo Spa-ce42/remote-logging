@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 public class ClientTests {
     public static void main(String[] args) throws Exception {
         RemoteLogger rl = new RemoteLogger("localhost", 6969, "logger");
+        rl.attemptToConnect();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String text = "";

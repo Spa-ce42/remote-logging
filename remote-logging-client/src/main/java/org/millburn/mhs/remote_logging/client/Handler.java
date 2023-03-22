@@ -25,7 +25,6 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        this.rl.setConnected(true);
         System.out.println("Reconnected!");
         {
             ByteBuf bb = UnpooledByteBufAllocator.DEFAULT.directBuffer();
@@ -56,9 +55,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        System.out.println("Starting the connection loop!");
-        this.rl.setConnected(false);
-        this.rl.attemptToReconnect();
+        System.out.println("Channel has became inactive!");
     }
 
 //    @Override

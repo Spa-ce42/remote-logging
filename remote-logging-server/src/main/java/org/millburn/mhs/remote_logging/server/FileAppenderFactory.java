@@ -1,6 +1,7 @@
 package org.millburn.mhs.remote_logging.server;
 
 import java.io.File;
+import java.io.UncheckedIOException;
 import java.time.Instant;
 
 public class FileAppenderFactory {
@@ -21,6 +22,14 @@ public class FileAppenderFactory {
             throw new IllegalArgumentException(f + " exists and is a file.");
         }
 
+        if(!f.exists()) {
+            boolean b = f.mkdirs();
+
+            if(!b) {
+                throw new RuntimeException("Cannot create: " + f);
+            }
+        }
+
         this.logFileDirectory = f;
     }
 
@@ -29,6 +38,6 @@ public class FileAppenderFactory {
     }
 
     public FileAppender createFileAppender(String loggerName) {
-        return new FileAppender((this.getLogFileDirectoryString() + Instant.now() + "-" + loggerName + ".log").replace(':', '-'));
+        return new FileAppender((this.getLogFileDirectoryString() + (Instant.now() + "-" + loggerName).replace(':', '-') + ".log"));
     }
 }

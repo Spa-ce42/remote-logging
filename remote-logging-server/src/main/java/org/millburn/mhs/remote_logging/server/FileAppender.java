@@ -18,7 +18,7 @@ public class FileAppender implements Closeable {
      * @param path the path to a file, the file can either exist or not exist
      */
     public FileAppender(String path) {
-        File f = new File(path).getAbsoluteFile();
+        File f = new File(path);
 
         try {
             this.fw = new FileWriter(f, true);

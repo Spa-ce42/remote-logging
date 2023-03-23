@@ -15,6 +15,9 @@ public class Main implements Closeable {
     private final SuperServer ss;
     private final Properties metadata;
 
+    /**
+     * @param propertiesPath a path that associates a properties file
+     */
     public Main(String propertiesPath) {
         this.metadata = new Properties();
         try {
@@ -45,6 +48,10 @@ public class Main implements Closeable {
         }));
     }
 
+    /**
+     * @param key a key that must be present in the properties file
+     * @return a string value that must be present in the properties file
+     */
     public String getRequiredStringProperty(String key) {
         String s = this.metadata.getProperty(key);
 
@@ -55,20 +62,35 @@ public class Main implements Closeable {
         return s;
     }
 
+    /**
+     * @param key a key that must be present in the properties file
+     * @return an int value that must be present in the properties file
+     */
     public int getRequiredIntProperty(String key) {
         String s = this.metadata.getProperty(key);
         return Integer.parseInt(s);
     }
 
+    /**
+     * @param key a key that may or may not exist in the properties file
+     * @param defaultValue what value will be returned if the said key does not exist
+     * @return either the defaultValue of the key does not exist or the string value associated with the key
+     */
     public String getOptionalStringProperty(String key, String defaultValue) {
         return this.metadata.getProperty(key, defaultValue);
     }
 
+    /**
+     * The server begins to listen on the specified ip and port
+     */
     public void run() {
         System.out.println("Listening for connections...");
         this.ss.listen();
     }
 
+    /**
+     * Closes the SuperServer
+     */
     @Override
     public void close() {
         this.ss.close();

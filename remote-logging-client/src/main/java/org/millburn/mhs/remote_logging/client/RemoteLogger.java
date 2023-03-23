@@ -16,6 +16,10 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Describes a logger that logs content to a remotely connected server instead of locally
+ * @author Keming Fei, Alex Kolodkin
+ */
 public class RemoteLogger implements Closeable {
     private final EventLoopGroup eventLoopGroup;
     private final String ip;
@@ -24,6 +28,11 @@ public class RemoteLogger implements Closeable {
     private String name;
     private RemoteOutputStream ros;
 
+    /**
+     * @param ip the server's ip address
+     * @param port the server's port
+     * @param name the name of the logger
+     */
     public RemoteLogger(String ip, int port, String name) {
         this.ip = ip;
         this.port = port;
@@ -43,10 +52,17 @@ public class RemoteLogger implements Closeable {
         ;
     }
 
+    /**
+     * @return the name of the logger
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Sets the name of the logger, changes it remotely if a connection is present
+     * @param s the new name of the logger
+     */
     public void setName(String s) {
         this.name = s;
         this.ros.write(MessageType.SPECIFY_NAME);
@@ -54,55 +70,73 @@ public class RemoteLogger implements Closeable {
         this.ros.flush();
     }
 
-    private final ChannelFutureListener cfl = new ChannelFutureListener() {
-        private void addCloseDetectListener(Channel channel) {
-            channel.closeFuture().addListener((ChannelFutureListener)future -> {
-                System.out.println("Connection lost.");
-                RemoteLogger.this.eventLoopGroup.schedule(RemoteLogger.this::connect, 1, TimeUnit.SECONDS);
-            });
-        }
-
-        @Override
-        public void operationComplete(ChannelFuture future) {
-            if(!future.isSuccess()) {//if is not successful, reconnect
-                future.channel().close();
-                System.out.println("Attempting to reconnect...");
-                RemoteLogger.this.eventLoopGroup.schedule(() -> {
-                    RemoteLogger.this.b.connect(RemoteLogger.this.ip, RemoteLogger.this.port).addListener(RemoteLogger.this.cfl);
-                }, 1, TimeUnit.SECONDS);
-                return;
-            }
-
-            Channel c = future.channel();
-            System.out.println("Connection established, creating RemoteOutputStream...");
-            RemoteLogger.this.ros = new RemoteOutputStream(c);
-            addCloseDetectListener(c);
-        }
+    private final ChannelFutureListener closeFutureListener = future -> {
+        System.out.println("Connection lost.");
+        RemoteLogger.this.eventLoopGroup.schedule(RemoteLogger.this::connect, 1, TimeUnit.SECONDS);
     };
 
+    private final ChannelFutureListener cfl = future -> {
+        //If the connection was not successful, reconnect
+        if(!future.isSuccess()) {
+            future.channel().close();
+            System.out.println("Attempting to reconnect...");
+            //Reconnect, passes cfl to handle the results
+            RemoteLogger.this.eventLoopGroup.schedule(() -> {
+                RemoteLogger.this.b.connect(RemoteLogger.this.ip, RemoteLogger.this.port).addListener(RemoteLogger.this.cfl);
+            }, 1, TimeUnit.SECONDS);
+            return;
+        }
+
+        //If successful, initialize ros, adds a close future listener in case the channel closes
+        Channel c = future.channel();
+        System.out.println("Connection established, creating RemoteOutputStream...");
+        RemoteLogger.this.ros = new RemoteOutputStream(c);
+        c.closeFuture().addListener(RemoteLogger.this.closeFutureListener);
+    };
+
+    /**
+     * Tries to connect to the server, if the connection is refused, it attempts again in a short period of time
+     */
     public void connect() {
         ChannelFuture f = this.b.connect(this.ip, this.port);
         f.addListener(this.cfl);
     }
 
+    /**
+     * In a separate thread, tries to connect to the server, if the connection is refused, it attempts again in a short period of time
+     */
     public void attemptToConnect() {
         this.eventLoopGroup.execute(this::connect);
     }
 
+    /**
+     * Logs a string
+     * @param message a string
+     */
     public void log(String message) {
         this.ros.write(MessageType.LOG);
         this.ros.writeString(message);
         this.ros.flush();
     }
 
+    /**
+     * Logs the string value of an object
+     * @param x an object
+     */
     public void log(Object x) {
         this.log(x.toString());
     }
 
+    /**
+     * @return the remote logger as a PrintStream
+     */
     public PrintStream getAsPrintStream() {
         return new RemoteLoggerPrintStream();
     }
 
+    /**
+     * Closes the logger and the connection associated with it
+     */
     @Override
     public void close() {
         this.eventLoopGroup.shutdownGracefully();

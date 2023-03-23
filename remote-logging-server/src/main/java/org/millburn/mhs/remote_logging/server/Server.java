@@ -7,7 +7,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import java.net.SocketException;
 
 /**
- * A class required by Netty, created for each connection to the super server
+ * Individual servers created to handle each incoming connection
  *
  * @author Keming Fei, Alex Kolodkin
  */
@@ -18,6 +18,10 @@ public class Server extends ChannelInboundHandlerAdapter {
     private boolean accepted = false;
     private FileAppender fa;
 
+    /**
+     * @param faf helps creates the FileAppender for the logger to log to
+     * @param desiredKey the key that is needed for every incoming connection
+     */
     public Server(FileAppenderFactory faf, String desiredKey) {
         this.faf = faf;
         this.desiredKey = desiredKey;
@@ -26,6 +30,7 @@ public class Server extends ChannelInboundHandlerAdapter {
     /**
      * Handles incoming messages from Client
      * The very first message sent by Client should always specify the name of the Client to be identified in Files
+     * The second message sent by Client should always contain the correct the key to prevent any attacks
      * If the said message with the said requirement was not met, the connection to the Client will stop
      */
     @Override
@@ -98,15 +103,17 @@ public class Server extends ChannelInboundHandlerAdapter {
         }
     }
 
+    /**
+     * Prints out any exceptions caught
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        if(cause instanceof SocketException) {
-            System.out.println("Client connection closed!");
-        } else {
-            cause.printStackTrace();
-        }
+        cause.printStackTrace();
     }
 
+    /**
+     * Closes the FileAppender when the channel becomes inactive
+     */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         this.fa.close();

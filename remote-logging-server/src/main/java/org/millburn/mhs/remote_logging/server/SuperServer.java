@@ -43,8 +43,7 @@ public class SuperServer implements Closeable {
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
         this.channelFuture = sb.bind(ip, port);
-        this.faf = new FileAppenderFactory();
-        this.faf.setLogFileDirectory(logFileDirectory);
+        this.faf = new FileAppenderFactory(logFileDirectory);
         this.desiredKey = desiredKey;
     }
 

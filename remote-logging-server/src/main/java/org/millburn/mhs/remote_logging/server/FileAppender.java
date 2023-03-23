@@ -50,6 +50,11 @@ public class FileAppender implements Closeable {
         this.append(System.lineSeparator());
     }
 
+    /**
+     * Flushes the content into the file
+     *
+     * @throws IOException if an IO error occurs
+     */
     public void flush() throws IOException {
         this.fw.flush();
     }

@@ -33,6 +33,8 @@ public class Handler extends ChannelInboundHandlerAdapter {
             bb.writeInt(b.length);
             bb.writeBytes(b);
             ctx.channel().write(bb);
+            ctx.channel().flush();
+            System.out.println("Sending name: " + this.rl.getName());
         }
 
         {
@@ -42,9 +44,9 @@ public class Handler extends ChannelInboundHandlerAdapter {
             bc.writeInt(c.length);
             bc.writeBytes(c);
             ctx.channel().write(bc);
+            ctx.channel().flush();
+            System.out.println("Sending key: 1234");
         }
-
-        ctx.channel().flush();
 
 
         for(OnConnectedListener ocl : this.rl.onConnectedListeners) {

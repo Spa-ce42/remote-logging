@@ -13,11 +13,11 @@ import java.io.PrintStream;
 public class ClientTests {
     public static void main(String[] args) throws Exception {
         RemoteLogger rl = new RemoteLogger("localhost", 6969, "logger");
-        rl.addOnConnectListener(rl1 -> {
+        /*rl.addOnConnectListener(rl1 -> {
             PrintStream ps = rl1.getAsPrintStream();
             System.setOut(ps);
             System.setErr(ps);
-        });
+        });*/
         rl.attemptToConnect();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

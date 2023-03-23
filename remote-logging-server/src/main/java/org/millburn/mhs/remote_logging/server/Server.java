@@ -35,12 +35,13 @@ public class Server extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf in = (ByteBuf)msg;
+        byte messageType = in.readByte();
+        System.out.println(this.loggerName + ": Message type: " + messageType);
+
         if(this.loggerName == null) {
-            ByteBuf in = (ByteBuf)msg;
-            byte messageType = in.readByte();
             if(messageType != MessageType.SPECIFY_NAME) {
-                System.err.println("The client did not send in a name! Abort!");
-                ctx.channel().close();
+                this.loggerName = "undefined";
                 return;
             }
 
@@ -52,8 +53,6 @@ public class Server extends ChannelInboundHandlerAdapter {
         }
 
         if(!this.accepted) {
-            ByteBuf in = (ByteBuf)msg;
-            byte messageType = in.readByte();
             if(messageType != MessageType.KEY) {
                 System.err.println("The client did not send in the key! Abort!");
                 ctx.channel().close();
@@ -73,10 +72,11 @@ public class Server extends ChannelInboundHandlerAdapter {
             System.out.println("Connection established with: " + this.loggerName);
         }
 
-        ByteBuf in = (ByteBuf)msg;
+        in = (ByteBuf)msg;
+        System.out.println(this.loggerName + ": Message type: " + messageType);
 
         while(in.isReadable()) {
-            byte messageType = in.readByte();
+            messageType = in.readByte();
 
             switch(messageType) {
                 case MessageType.SPECIFY_NAME -> {
@@ -108,7 +108,8 @@ public class Server extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        System.out.println("From: " + this.loggerName);
+        System.out.println(cause.getClass());
     }
 
     /**

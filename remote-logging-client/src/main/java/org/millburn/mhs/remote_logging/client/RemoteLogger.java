@@ -14,6 +14,8 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import java.io.Closeable;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,6 +29,7 @@ public class RemoteLogger implements Closeable {
     private final Bootstrap b;
     private String name;
     private RemoteOutputStream ros;
+    List<OnConnectedListener> onConnectedListeners;
 
     /**
      * @param ip the server's ip address
@@ -37,6 +40,7 @@ public class RemoteLogger implements Closeable {
         this.ip = ip;
         this.port = port;
         this.name = name;
+        this.onConnectedListeners = new ArrayList<>();
 
         this.eventLoopGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("EventLoopGroupThreadCreator", true));
 
@@ -50,6 +54,14 @@ public class RemoteLogger implements Closeable {
                     }
                 })
         ;
+    }
+
+    public void addOnConnectListener(OnConnectedListener ocl) {
+        this.onConnectedListeners.add(ocl);
+    }
+
+    public void removeOnConnectListener(OnConnectedListener ocl) {
+        this.onConnectedListeners.remove(ocl);
     }
 
     /**

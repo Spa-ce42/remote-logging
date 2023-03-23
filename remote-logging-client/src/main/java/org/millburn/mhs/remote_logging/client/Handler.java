@@ -45,6 +45,11 @@ public class Handler extends ChannelInboundHandlerAdapter {
         }
 
         ctx.channel().flush();
+
+
+        for(OnConnectedListener ocl : this.rl.onConnectedListeners) {
+            ocl.onConnect(this.rl);
+        }
     }
 
     @Override

@@ -4,8 +4,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import java.net.SocketException;
-
 /**
  * Individual servers created to handle each incoming connection
  *
@@ -35,12 +33,11 @@ public class Server extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf in = (ByteBuf)msg;
-
         if(this.loggerName == null) {
+            ByteBuf in = (ByteBuf)msg;
             byte messageType = in.readByte();
             if(messageType != MessageType.SPECIFY_NAME) {
-                System.err.println("The client did not send in a name, abort!");
+                System.err.println("The client did not send in a name! Abort!");
                 ctx.channel().close();
                 return;
             }
@@ -52,11 +49,8 @@ public class Server extends ChannelInboundHandlerAdapter {
             this.fa = this.faf.createFileAppender(this.loggerName);
         }
 
-        if(!in.isReadable()) {
-            return;
-        }
-
         if(!this.accepted) {
+            ByteBuf in = (ByteBuf)msg;
             byte messageType = in.readByte();
             if(messageType != MessageType.KEY) {
                 System.err.println("The client did not send in the key! Abort!");
@@ -77,11 +71,10 @@ public class Server extends ChannelInboundHandlerAdapter {
             System.out.println("Connection established with: " + this.loggerName);
         }
 
-        byte messageType = in.readByte();
-        System.out.println(this.loggerName + ": Message type: " + messageType);
+        ByteBuf in = (ByteBuf)msg;
 
         while(in.isReadable()) {
-            messageType = in.readByte();
+            byte messageType = in.readByte();
 
             switch(messageType) {
                 case MessageType.SPECIFY_NAME -> {
@@ -113,8 +106,7 @@ public class Server extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        System.out.println("From: " + this.loggerName);
-        System.out.println(cause.getClass());
+        cause.printStackTrace();
     }
 
     /**

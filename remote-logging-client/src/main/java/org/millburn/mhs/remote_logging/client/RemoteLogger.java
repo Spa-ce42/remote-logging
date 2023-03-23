@@ -70,19 +70,21 @@ public class RemoteLogger implements Closeable {
         this.ros.flush();
     }
 
-    private final ChannelFutureListener closeFutureListener = future -> {
+    private void listenToCloseFuture(ChannelFuture future) {
         System.out.println("Connection lost.");
         RemoteLogger.this.eventLoopGroup.schedule(RemoteLogger.this::connect, 1, TimeUnit.SECONDS);
-    };
+    }
 
-    private final ChannelFutureListener cfl = future -> {
+    private final ChannelFutureListener closeFutureListener = this::listenToCloseFuture;
+
+    private void listenToConnectFuture(ChannelFuture future) {
         //If the connection was not successful, reconnect
         if(!future.isSuccess()) {
             future.channel().close();
             System.out.println("Attempting to reconnect...");
             //Reconnect, passes cfl to handle the results
-            RemoteLogger.this.eventLoopGroup.schedule(() -> {
-                RemoteLogger.this.b.connect(RemoteLogger.this.ip, RemoteLogger.this.port).addListener(RemoteLogger.this.cfl);
+            this.eventLoopGroup.schedule(() -> {
+                this.b.connect(this.ip, this.port).addListener(this.cfl);
             }, 1, TimeUnit.SECONDS);
             return;
         }
@@ -92,7 +94,9 @@ public class RemoteLogger implements Closeable {
         System.out.println("Connection established, creating RemoteOutputStream...");
         RemoteLogger.this.ros = new RemoteOutputStream(c);
         c.closeFuture().addListener(RemoteLogger.this.closeFutureListener);
-    };
+    }
+
+    private final ChannelFutureListener cfl = this::listenToConnectFuture;
 
     /**
      * Tries to connect to the server, if the connection is refused, it attempts again in a short period of time
@@ -142,6 +146,7 @@ public class RemoteLogger implements Closeable {
         this.eventLoopGroup.shutdownGracefully();
     }
 
+    //TODO: Implement all of PrintStream's methods
     private class RemoteLoggerPrintStream extends PrintStream {
         public RemoteLoggerPrintStream(OutputStream out) {
             super(out);

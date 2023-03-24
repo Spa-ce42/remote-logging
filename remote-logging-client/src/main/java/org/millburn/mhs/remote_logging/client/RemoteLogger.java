@@ -158,7 +158,6 @@ public class RemoteLogger implements Closeable {
         this.eventLoopGroup.shutdownGracefully();
     }
 
-    //TODO: Implement all of PrintStream's methods
     private class RemoteLoggerPrintStream extends PrintStream {
         public RemoteLoggerPrintStream(OutputStream out) {
             super(out);
@@ -166,6 +165,96 @@ public class RemoteLogger implements Closeable {
 
         public RemoteLoggerPrintStream() {
             this(RemoteLogger.this.ros);
+        }
+
+        @Override
+        public void flush() {
+            RemoteLogger.this.ros.flush();
+        }
+
+        @Override
+        public void close() {
+            RemoteLogger.this.close();
+        }
+
+        @Override
+        public boolean checkError() {
+            return RemoteLogger.this.ros.isActive();
+        }
+
+        @Override
+        protected void setError() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clearError() {
+
+        }
+
+        @Override
+        public void write(int b) {
+            RemoteLogger.this.ros.write(b);
+        }
+
+        @Override
+        public void write(byte[] buf, int off, int len) {
+            RemoteLogger.this.ros.write(buf, off, len);
+        }
+
+        @Override
+        public void write(byte[] buf) {
+            RemoteLogger.this.ros.write(buf);
+        }
+
+        @Override
+        public void writeBytes(byte[] buf) {
+            RemoteLogger.this.ros.write(buf);
+        }
+
+        @Override
+        public void print(boolean b) {
+            this.println(b);
+        }
+
+        @Override
+        public void print(char c) {
+            this.println(c);
+        }
+
+        @Override
+        public void print(int i) {
+            this.println(i);
+        }
+
+        @Override
+        public void print(long l) {
+            this.println(l);
+        }
+
+        @Override
+        public void print(float f) {
+            this.println(f);
+        }
+
+        @Override
+        public void print(double d) {
+            this.println(d);
+        }
+
+        @Override
+        public void print(char[] s) {
+            this.println(s);
+        }
+
+        @Override
+        public void print(String s) {
+            this.println(s);
+        }
+
+        @Override
+        public void print(Object obj) {
+            this.println(obj);
         }
 
         @Override

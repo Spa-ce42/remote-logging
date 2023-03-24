@@ -17,12 +17,6 @@ public class Handler extends ChannelInboundHandlerAdapter {
         this.rl = rl;
     }
 
-//    @Override
-//    public void channelRegistered(ChannelHandlerContext ctx) {
-//        System.out.println(ctx.channel());
-//        System.out.println("Handler.channelRegistered");
-//    }
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         System.out.println("Reconnected!");
@@ -56,18 +50,11 @@ public class Handler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        System.out.println("The following error has occured: " + cause.getClass());
-        System.out.println("The following was the error message: " + cause.getMessage());
+        cause.printStackTrace();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.println("Channel has became inactive!");
     }
-
-//    @Override
-//    public void channelUnregistered(ChannelHandlerContext ctx) {
-//        System.out.println("Handler.channelUnregistered");
-//        System.out.println(ctx.channel());
-//    }
 }

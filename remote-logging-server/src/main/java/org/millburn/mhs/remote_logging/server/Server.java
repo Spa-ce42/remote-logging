@@ -33,8 +33,8 @@ public class Server extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf in = (ByteBuf)msg;
         if(this.loggerName == null) {
-            ByteBuf in = (ByteBuf)msg;
             byte messageType = in.readByte();
             if(messageType != MessageType.SPECIFY_NAME) {
                 System.err.println("The client did not send in a name! Abort!");
@@ -49,8 +49,11 @@ public class Server extends ChannelInboundHandlerAdapter {
             this.fa = this.faf.createFileAppender(this.loggerName);
         }
 
+        if(!in.isReadable()) {
+            return;
+        }
+
         if(!this.accepted) {
-            ByteBuf in = (ByteBuf)msg;
             byte messageType = in.readByte();
             if(messageType != MessageType.KEY) {
                 System.err.println("The client did not send in the key! Abort!");
@@ -70,8 +73,6 @@ public class Server extends ChannelInboundHandlerAdapter {
             }
             System.out.println("Connection established with: " + this.loggerName);
         }
-
-        ByteBuf in = (ByteBuf)msg;
 
         while(in.isReadable()) {
             byte messageType = in.readByte();

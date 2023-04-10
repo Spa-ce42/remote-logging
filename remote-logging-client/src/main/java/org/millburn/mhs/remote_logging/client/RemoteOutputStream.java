@@ -76,7 +76,7 @@ public class RemoteOutputStream extends OutputStream {
      */
     public void writeString(String s) {
         byte[] b = s.getBytes();
-        this.buffer.writeInt(b.length);
+//        this.buffer.writeInt(b.length);
         this.buffer.writeBytes(b);
     }
 

@@ -1,6 +1,8 @@
 package org.millburn.mhs.remote_logging.client;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -30,6 +32,7 @@ public class RemoteLogger implements Closeable {
     private String name;
     private RemoteOutputStream ros;
     List<OnConnectedListener> onConnectedListeners;
+    private volatile boolean ready;
 
     /**
      * @param ip the server's ip address
@@ -84,6 +87,7 @@ public class RemoteLogger implements Closeable {
 
     private void listenToCloseFuture(ChannelFuture future) {
         System.out.println("Connection lost.");
+        this.ready = false;
         RemoteLogger.this.eventLoopGroup.schedule(RemoteLogger.this::connect, 1, TimeUnit.SECONDS);
     }
 
@@ -98,14 +102,16 @@ public class RemoteLogger implements Closeable {
             this.eventLoopGroup.schedule(() -> {
                 this.b.connect(this.ip, this.port).addListener(this.cfl);
             }, 1, TimeUnit.SECONDS);
+            this.ready = false;
             return;
         }
 
         //If successful, initialize ros, adds a close future listener in case the channel closes
-        Channel c = future.channel();
+        Channel channel = future.channel();
         System.out.println("Connection established, creating RemoteOutputStream...");
-        RemoteLogger.this.ros = new RemoteOutputStream(c);
-        c.closeFuture().addListener(RemoteLogger.this.closeFutureListener);
+        RemoteLogger.this.ros = new RemoteOutputStream(channel);
+        channel.closeFuture().addListener(RemoteLogger.this.closeFutureListener);
+        this.ready = true;
     }
 
     private final ChannelFutureListener cfl = this::listenToConnectFuture;
@@ -130,7 +136,18 @@ public class RemoteLogger implements Closeable {
      * @param message a string
      */
     public void log(String message) {
-        this.ros.write(MessageType.LOG);
+        if(!ready) {
+            return;
+        }
+
+        // Splits string into sections of at most 100 characters
+//        String[] results = message.split("(?<=\\G.{" + 100 + "})");
+//        for (String text : results) {
+//            this.ros.write(MessageType.LOG);
+//            this.ros.writeString(text);
+//            this.ros.flush();
+//        }
+//        this.ros.write(MessageType.LOG);
         this.ros.writeString(message);
         this.ros.flush();
     }
@@ -140,6 +157,10 @@ public class RemoteLogger implements Closeable {
      * @param x an object
      */
     public void log(Object x) {
+        if(!ready) {
+            return;
+        }
+
         this.log(x.toString());
     }
 
@@ -204,11 +225,6 @@ public class RemoteLogger implements Closeable {
 
         @Override
         public void write(byte[] buf) {
-            RemoteLogger.this.ros.write(buf);
-        }
-
-        @Override
-        public void writeBytes(byte[] buf) {
             RemoteLogger.this.ros.write(buf);
         }
 

@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import java.util.ArrayList;
+
 /**
  * Individual servers created to handle each incoming connection
  *
@@ -33,9 +35,11 @@ public class Server extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println("NEW CHANNEL READ");
         ByteBuf in = (ByteBuf)msg;
         if(this.loggerName == null) {
             byte messageType = in.readByte();
+            System.out.println(messageType);
             if(messageType != MessageType.SPECIFY_NAME) {
                 System.err.println("The client did not send in a name! Abort!");
                 ctx.channel().close();
@@ -55,6 +59,7 @@ public class Server extends ChannelInboundHandlerAdapter {
 
         if(!this.accepted) {
             byte messageType = in.readByte();
+            System.out.println(messageType);
             if(messageType != MessageType.KEY) {
                 System.err.println("The client did not send in the key! Abort!");
                 ctx.channel().close();
@@ -74,32 +79,47 @@ public class Server extends ChannelInboundHandlerAdapter {
             System.out.println("Connection established with: " + this.loggerName);
         }
 
-        while(in.isReadable()) {
-            byte messageType = in.readByte();
-
-            switch(messageType) {
-                case MessageType.SPECIFY_NAME -> {
-                    int stringLength = in.readInt();
-                    byte[] b = new byte[stringLength];
-                    in.readBytes(b);
-                    this.loggerName = new String(b);
-                    System.out.println(this.loggerName + ": # The client has changed its name to: " + this.loggerName);
-                    this.fa.appendLine("# The client has changed its name to: " + this.loggerName);
-                    this.fa.close();
-                    this.fa = this.faf.createFileAppender(this.loggerName);
-                }
-
-                case MessageType.LOG -> {
-                    int stringLength = in.readInt();
-                    byte[] b = new byte[stringLength];
-                    in.readBytes(b);
-                    String message = new String(b);
-                    System.out.println(this.loggerName + ": " + message);
-                    this.fa.appendLine(message);
-                    this.fa.flush();
-                }
+        System.out.println("STARTING THE READING");
+//        ArrayList<Character> b = new ArrayList<>();
+        StringBuilder b = new StringBuilder();
+        int i = 0;
+        while (in.isReadable()) {
+            char character = (char) in.readByte();
+            if (i > 4) {
+                b.append(character);
             }
+            i++;
         }
+        System.out.println(b.toString());
+//        while(in.isReadable()) {
+//            byte messageType = in.readByte();
+//            System.out.println(messageType);
+//
+//            if (messageType == MessageType.SPECIFY_NAME) {
+//                int stringLength = in.readInt();
+//                byte[] b = new byte[stringLength];
+//                in.readBytes(b);
+//                this.loggerName = new String(b);
+//                System.out.println(this.loggerName + ": # The client has changed its name to: " + this.loggerName);
+//                this.fa.appendLine("# The client has changed its name to: " + this.loggerName);
+//                this.fa.close();
+//                this.fa = this.faf.createFileAppender(this.loggerName);
+//            } else {
+//                int stringLength = in.readInt();
+//                System.out.println("Capacity: " + in.capacity());
+//                System.out.println("LENGTH: " + stringLength);
+//                System.out.println("Reader: " + in.readerIndex());
+//                System.out.println("Writer: " + in.writerIndex());
+//                byte[] b = new byte[100];
+//                in.readBytes(b);
+//                String message = new String(b);
+//                System.out.println(this.loggerName + ": " + message);
+//                this.fa.appendLine(message);
+//                System.out.println("APPENDED");
+//                this.fa.flush();
+//                System.out.println("Flushed");
+//            }
+//        }
     }
 
     /**
@@ -115,6 +135,10 @@ public class Server extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        this.fa.close();
+        if(this.fa != null) {
+            this.fa.close();
+        }
+
+        System.out.println("Channel closed");
     }
 }

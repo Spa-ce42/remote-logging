@@ -15,11 +15,11 @@ import java.util.concurrent.CountDownLatch;
 public class ClientTests {
     public static void main(String[] args) {
         CountDownLatch cdl = new CountDownLatch(1);
-        RemoteLogger rl = new RemoteLogger("10.0.0.56", 6969, "logger");
+        RemoteLogger rl = new RemoteLogger("localhost", 6969, "logger");
         rl.addOnConnectListener(rl1 -> {
-            /*PrintStream ps = rl1.getAsPrintStream();
-            System.setOut(ps);
-            System.setErr(ps);*/
+            PrintStream ps = rl1.getAsPrintStream();
+//            System.setOut(ps);
+            System.setErr(ps);
             cdl.countDown();
         });
         rl.attemptToConnect();

@@ -1,9 +1,11 @@
 package org.millburn.mhs.remote_logging.client;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.stream.ChunkedStream;
 
 /**
  *
@@ -26,7 +28,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
             byte[] b = this.rl.getName().getBytes();
             bb.writeInt(b.length);
             bb.writeBytes(b);
-            ctx.channel().write(bb);
+            ctx.channel().write(new ChunkedStream(new ByteBufInputStream(bb)));
             System.out.println("Sending name: " + this.rl.getName());
         }
 
@@ -36,7 +38,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
             byte[] c = "1234".getBytes();
             bc.writeInt(c.length);
             bc.writeBytes(c);
-            ctx.channel().write(bc);
+            ctx.channel().write(new ChunkedStream(new ByteBufInputStream(bc)));
             System.out.println("Sending key: 1234");
         }
 
@@ -44,6 +46,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
         for(OnConnectedListener ocl : this.rl.onConnectedListeners) {
             ocl.onConnect(this.rl);
         }
+
         ctx.channel().flush();
     }
 

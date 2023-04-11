@@ -12,6 +12,7 @@ import java.io.OutputStream;
  *
  * @author Keming Fei
  */
+@Deprecated
 public class RemoteOutputStream extends OutputStream {
     private final Channel channel;
     private ByteBuf buffer;

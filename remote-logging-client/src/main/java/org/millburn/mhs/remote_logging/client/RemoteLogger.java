@@ -1,16 +1,16 @@
 package org.millburn.mhs.remote_logging.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.io.Closeable;
@@ -30,7 +30,7 @@ public class RemoteLogger implements Closeable {
     private final int port;
     private final Bootstrap b;
     private String name;
-    private RemoteOutputStream ros;
+    private ProtocolWriter ros;
     List<OnConnectedListener> onConnectedListeners;
     private volatile boolean ready;
 
@@ -53,7 +53,9 @@ public class RemoteLogger implements Closeable {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel socketChannel) {
-                        socketChannel.pipeline().addLast(new Handler(RemoteLogger.this));
+                        ChannelPipeline cp = socketChannel.pipeline();
+                        cp.addLast(new ChunkedWriteHandler());
+                        cp.addLast(new Handler(RemoteLogger.this));
                     }
                 })
         ;
@@ -80,8 +82,9 @@ public class RemoteLogger implements Closeable {
      */
     public void setName(String s) {
         this.name = s;
-        this.ros.write(MessageType.SPECIFY_NAME);
+        this.ros.beginMessage(MessageType.SPECIFY_NAME);
         this.ros.writeString(this.name);
+        this.ros.endMessage();
         this.ros.flush();
     }
 
@@ -109,7 +112,7 @@ public class RemoteLogger implements Closeable {
         //If successful, initialize ros, adds a close future listener in case the channel closes
         Channel channel = future.channel();
         System.out.println("Connection established, creating RemoteOutputStream...");
-        RemoteLogger.this.ros = new RemoteOutputStream(channel);
+        this.ros = new ProtocolWriter(channel);
         channel.closeFuture().addListener(RemoteLogger.this.closeFutureListener);
         this.ready = true;
     }
@@ -148,7 +151,9 @@ public class RemoteLogger implements Closeable {
 //            this.ros.flush();
 //        }
 //        this.ros.write(MessageType.LOG);
+        this.ros.beginMessage(MessageType.LOG);
         this.ros.writeString(message);
+        this.ros.endMessage();
         this.ros.flush();
     }
 
@@ -177,6 +182,10 @@ public class RemoteLogger implements Closeable {
     @Override
     public void close() {
         this.eventLoopGroup.shutdownGracefully();
+    }
+
+    public ProtocolWriter getProtocolWriter() {
+        return this.ros;
     }
 
     private class RemoteLoggerPrintStream extends PrintStream {

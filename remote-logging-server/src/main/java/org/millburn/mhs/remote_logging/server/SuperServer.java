@@ -4,10 +4,12 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.stream.ChunkedWriteHandler;
 
 import java.io.Closeable;
 
@@ -37,7 +39,9 @@ public class SuperServer implements Closeable {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel sc) {
-                        sc.pipeline().addLast(new Server(SuperServer.this.faf, SuperServer.this.desiredKey));
+                        ChannelPipeline cp = sc.pipeline();
+                        cp.addLast(new ChunkedWriteHandler());
+                        cp.addLast(new Server(SuperServer.this.faf, SuperServer.this.desiredKey));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)

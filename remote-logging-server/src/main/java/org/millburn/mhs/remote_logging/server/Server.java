@@ -26,20 +26,15 @@ public class Server extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Handles incoming messages from Client
-     * The very first message sent by Client should always specify the name of the Client to be identified in Files
-     * The second message sent by Client should always contain the correct the key to prevent any attacks
-     * If the said message with the said requirement was not met, the connection to the Client will stop
+     * @return should continue
      */
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf in = (ByteBuf)msg;
+    private boolean ensureLoggerNameSpecified(ChannelHandlerContext ctx, ByteBuf in) {
         if(this.loggerName == null) {
             byte messageType = in.readByte();
             if(messageType != MessageType.SPECIFY_NAME) {
                 System.err.println("The client did not send in a name! Abort!");
                 ctx.channel().close();
-                return;
+                return false;
             }
 
             int stringLength = in.readInt();
@@ -49,36 +44,63 @@ public class Server extends ChannelInboundHandlerAdapter {
             this.fa = this.faf.createFileAppender(this.loggerName);
         }
 
-        if(!in.isReadable()) {
-            return;
-        }
+        return true;
+    }
 
-
+    /**
+     * @return should continue
+     */
+    private boolean ensureLoggerKeySpecified(ChannelHandlerContext ctx, ByteBuf in) {
         if(!this.accepted) {
             byte messageType = in.readByte();
+
             if(messageType != MessageType.KEY) {
                 System.err.println("The client did not send in the key! Abort!");
                 ctx.channel().close();
-                return;
+                return false;
             }
 
             int stringLength = in.readInt();
             byte[] b = new byte[stringLength];
             in.readBytes(b);
+
             if(!this.desiredKey.equals(new String(b))) {
                 System.err.println("The client did not send in the correct key! Abort!");
                 ctx.channel().close();
-                return;
-            } else {
-                this.accepted = true;
+                return false;
             }
+
+            this.accepted = true;
             System.out.println("Connection established with: " + this.loggerName);
         }
 
-        while(in.isReadable()) {
-            byte messageType = in.readByte();
+        return true;
+    }
 
-            if (messageType == MessageType.SPECIFY_NAME) {
+    /**
+     * Handles incoming messages from Client
+     * The very first message sent by Client should always specify the name of the Client to be identified in Files
+     * The second message sent by Client should always contain the correct the key to prevent any attacks
+     * If the said message with the said requirement was not met, the connection to the Client will stop
+     */
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf in = (ByteBuf)msg;
+
+        if(!this.ensureLoggerNameSpecified(ctx, in)) {
+            in.release();
+            return;
+        }
+
+        if(!this.ensureLoggerKeySpecified(ctx, in)) {
+            in.release();
+            return;
+        }
+
+        byte messageType = in.readByte();
+
+        switch(messageType) {
+            case MessageType.SPECIFY_NAME -> {
                 int stringLength = in.readInt();
                 byte[] b = new byte[stringLength];
                 in.readBytes(b);
@@ -87,15 +109,19 @@ public class Server extends ChannelInboundHandlerAdapter {
                 this.fa.appendLine("# The client has changed its name to: " + this.loggerName);
                 this.fa.close();
                 this.fa = this.faf.createFileAppender(this.loggerName);
-            } else {
+            }
+
+            case MessageType.LOG -> {
                 int stringLength = in.readInt();
                 byte[] b = new byte[stringLength];
                 in.readBytes(b);
                 String s = new String(b);
                 this.fa.append(s);
-                //System.out.print(s);
+                System.out.print(s);
             }
         }
+
+        in.release();
     }
 
     /**

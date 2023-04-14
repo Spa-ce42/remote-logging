@@ -22,10 +22,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
             return;
         }
 
-        out.add(in.readBytes(length));
-
-        if(in.readerIndex() == in.writerIndex()) {
-            in.release();
-        }
+        ByteBuf bb = in.readBytes(length);
+        out.add(bb);
     }
 }

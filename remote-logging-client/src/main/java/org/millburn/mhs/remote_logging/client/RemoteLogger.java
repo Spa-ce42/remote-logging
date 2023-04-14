@@ -1,6 +1,9 @@
 package org.millburn.mhs.remote_logging.client;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -10,6 +13,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.stream.ChunkedStream;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
@@ -32,7 +36,6 @@ public class RemoteLogger implements Closeable {
     private String name;
     private ProtocolWriter ros;
     List<OnConnectedListener> onConnectedListeners;
-    private volatile boolean ready;
 
     /**
      * @param ip the server's ip address
@@ -90,7 +93,6 @@ public class RemoteLogger implements Closeable {
 
     private void listenToCloseFuture(ChannelFuture future) {
         System.out.println("Connection lost.");
-        this.ready = false;
         RemoteLogger.this.eventLoopGroup.schedule(RemoteLogger.this::connect, 1, TimeUnit.SECONDS);
     }
 
@@ -105,7 +107,6 @@ public class RemoteLogger implements Closeable {
             this.eventLoopGroup.schedule(() -> {
                 this.b.connect(this.ip, this.port).addListener(this.cfl);
             }, 1, TimeUnit.SECONDS);
-            this.ready = false;
             return;
         }
 
@@ -114,7 +115,6 @@ public class RemoteLogger implements Closeable {
         System.out.println("Connection established, creating RemoteOutputStream...");
         this.ros = new ProtocolWriter(channel);
         channel.closeFuture().addListener(RemoteLogger.this.closeFutureListener);
-        this.ready = true;
     }
 
     private final ChannelFutureListener cfl = this::listenToConnectFuture;
@@ -125,6 +125,7 @@ public class RemoteLogger implements Closeable {
     public void connect() {
         ChannelFuture f = this.b.connect(this.ip, this.port);
         f.addListener(this.cfl);
+        f.syncUninterruptibly();
     }
 
     /**
@@ -139,10 +140,6 @@ public class RemoteLogger implements Closeable {
      * @param message a string
      */
     public void log(String message) {
-        if(!ready) {
-            return;
-        }
-
         // Splits string into sections of at most 100 characters
 //        String[] results = message.split("(?<=\\G.{" + 100 + "})");
 //        for (String text : results) {
@@ -151,6 +148,13 @@ public class RemoteLogger implements Closeable {
 //            this.ros.flush();
 //        }
 //        this.ros.write(MessageType.LOG);
+
+//        byte[] b = this.rl.getName().getBytes();
+//        bb.writeInt(b.length);
+//        bb.writeBytes(b);
+//        ctx.channel().write(new ChunkedStream(new ByteBufInputStream(bb)));
+//        System.out.println("Sending name: " + this.rl.getName());
+
         this.ros.beginMessage(MessageType.LOG);
         this.ros.writeString(message);
         this.ros.endMessage();
@@ -162,10 +166,6 @@ public class RemoteLogger implements Closeable {
      * @param x an object
      */
     public void log(Object x) {
-        if(!ready) {
-            return;
-        }
-
         this.log(x.toString());
     }
 

@@ -33,10 +33,11 @@ public class ProtocolWriter extends OutputStream {
         byte[] b = s.getBytes();
         this.current.writeInt(b.length);
         this.current.writeBytes(b);
+
     }
 
     public void endMessage() {
-        this.byteBufs.add(new ChunkedStream(new ByteBufInputStream(this.current)));
+        this.byteBufs.add(new ChunkedStream(new ByteBufInputStream(this.current, true)));
     }
 
     @Override
@@ -64,5 +65,6 @@ public class ProtocolWriter extends OutputStream {
         }
 
         this.byteBufs = new ArrayList<>();
+        this.c.flush();
     }
 }

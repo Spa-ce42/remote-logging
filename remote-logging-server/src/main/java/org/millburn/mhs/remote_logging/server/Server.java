@@ -93,7 +93,7 @@ public class Server extends ChannelInboundHandlerAdapter {
                 in.readBytes(b);
                 String s = new String(b);
                 this.fa.append(s);
-                System.out.print(s);
+                //System.out.print(s);
             }
         }
     }

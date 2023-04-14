@@ -20,6 +20,14 @@ public class ProtocolWriter extends OutputStream {
         this.byteBufs = new ArrayList<>();
     }
 
+    public ProtocolWriter() {
+        this(null);
+    }
+
+    public void setChannel(Channel c) {
+        this.c = c;
+    }
+
     public void beginMessage(byte type) {
         this.current = UnpooledByteBufAllocator.DEFAULT.directBuffer();
         this.current.writeByte(type);
@@ -33,7 +41,6 @@ public class ProtocolWriter extends OutputStream {
         byte[] b = s.getBytes();
         this.current.writeInt(b.length);
         this.current.writeBytes(b);
-
     }
 
     public void endMessage() {
@@ -60,6 +67,10 @@ public class ProtocolWriter extends OutputStream {
     }
 
     public void flush() {
+        if(this.c == null) {
+            return;
+        }
+
         for(ChunkedStream cs : this.byteBufs) {
             this.c.write(cs);
         }

@@ -23,5 +23,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
         }
 
         out.add(in.readBytes(length));
+
+        if(in.readerIndex() == in.writerIndex()) {
+            in.release();
+        }
     }
 }

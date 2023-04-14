@@ -47,6 +47,7 @@ public class RemoteLogger implements Closeable {
         this.ip = ip;
         this.port = port;
         this.name = name;
+        this.ros = new ProtocolWriter();
         this.onConnectedListeners = new ArrayList<>();
 
         this.eventLoopGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("EventLoopGroupThreadCreator", true));

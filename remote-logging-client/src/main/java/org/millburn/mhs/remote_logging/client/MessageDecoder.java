@@ -8,7 +8,7 @@ import java.util.List;
 
 public class MessageDecoder extends ByteToMessageDecoder {
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         int initialReaderIndex = in.readerIndex();
 
         if(in.readableBytes() < 4) {
@@ -23,5 +23,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
         }
 
         out.add(in.readBytes(length));
+
+        if(in.readerIndex() == in.writerIndex()) {
+            in.release();
+        }
     }
 }

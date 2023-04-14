@@ -19,6 +19,7 @@ public class FileAppender implements Closeable {
      */
     public FileAppender(String path) {
         File f = new File(path);
+        System.out.println(f.getAbsolutePath());
 
         try {
             this.fw = new FileWriter(f, true);

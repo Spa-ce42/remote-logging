@@ -13,6 +13,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.stream.ChunkedStream;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -57,6 +58,7 @@ public class RemoteLogger implements Closeable {
                     @Override
                     public void initChannel(SocketChannel socketChannel) {
                         ChannelPipeline cp = socketChannel.pipeline();
+                        cp.addLast(new LengthFieldPrepender(4));
                         cp.addLast(new ChunkedWriteHandler());
                         cp.addLast(new Handler(RemoteLogger.this));
                     }
@@ -92,7 +94,7 @@ public class RemoteLogger implements Closeable {
     }
 
     private void listenToCloseFuture(ChannelFuture future) {
-        System.out.println("Connection lost.");
+        System.out.println("Connection closed.");
         RemoteLogger.this.eventLoopGroup.schedule(RemoteLogger.this::connect, 1, TimeUnit.SECONDS);
     }
 
@@ -156,7 +158,7 @@ public class RemoteLogger implements Closeable {
 //        System.out.println("Sending name: " + this.rl.getName());
 
         this.ros.beginMessage(MessageType.LOG);
-        this.ros.writeString(message);
+        this.ros.writeString(message + System.lineSeparator());
         this.ros.endMessage();
         this.ros.flush();
     }

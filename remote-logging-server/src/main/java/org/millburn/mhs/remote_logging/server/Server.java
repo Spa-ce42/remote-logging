@@ -4,8 +4,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import java.util.ArrayList;
-
 /**
  * Individual servers created to handle each incoming connection
  *
@@ -94,8 +92,8 @@ public class Server extends ChannelInboundHandlerAdapter {
                 byte[] b = new byte[stringLength];
                 in.readBytes(b);
                 String s = new String(b);
-                this.fa.appendLine(s);
-                System.out.println(s);
+                this.fa.append(s);
+                System.out.print(s);
             }
         }
     }

@@ -9,6 +9,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 import java.io.Closeable;
@@ -40,8 +41,9 @@ public class SuperServer implements Closeable {
                     @Override
                     public void initChannel(SocketChannel sc) {
                         ChannelPipeline cp = sc.pipeline();
+                        cp.addLast(new LengthFieldPrepender(4));
                         cp.addLast(new ChunkedWriteHandler());
-                        cp.addLast(new Server(SuperServer.this.faf, SuperServer.this.desiredKey));
+                        cp.addLast(new MessageDecoder(), new Server(SuperServer.this.faf, SuperServer.this.desiredKey));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)

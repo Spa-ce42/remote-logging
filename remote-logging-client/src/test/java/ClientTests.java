@@ -1,4 +1,4 @@
-package org.millburn.mhs.remote_logging.client;
+import org.millburn.mhs.remote_logging.client.RemoteLogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;

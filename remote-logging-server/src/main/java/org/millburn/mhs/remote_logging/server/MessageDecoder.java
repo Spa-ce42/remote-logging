@@ -1,28 +1,57 @@
 package org.millburn.mhs.remote_logging.server;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.List;
 
 public class MessageDecoder extends ByteToMessageDecoder {
+    private ByteBuf iab;
+    private int lengthNeeded;
+
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-        int initialReaderIndex = in.readerIndex();
 
-        if(in.readableBytes() < 4) {
-            return;
-        }
+            if(this.lengthNeeded <= 0) {
+                if(in.readableBytes() < 4) {
+                    return;
+                }
 
-        int length = in.readInt();
+                int length = in.readInt();
 
-        if(in.readableBytes() < length) {
-            in.readerIndex(initialReaderIndex);
-            return;
-        }
+                if(in.readableBytes() < length) {
+                    int readableBytes = in.readableBytes();
+                    this.iab = UnpooledByteBufAllocator.DEFAULT.directBuffer();
+                    this.iab.writeBytes(in.readBytes(readableBytes));
+                    this.lengthNeeded = length - readableBytes;
+                    return;
+                }
 
-        ByteBuf bb = in.readBytes(length);
-        out.add(bb);
+                ByteBuf bb = in.readBytes(length);
+                bb.retain();
+                out.add(bb);
+                return;
+            }
+
+            int readableBytes = in.readableBytes();
+            if(this.lengthNeeded < readableBytes) {
+                this.iab.writeBytes(in.readBytes(this.lengthNeeded));
+                this.lengthNeeded = 0;
+                out.add(this.iab);
+                return;
+            }
+
+            if(this.lengthNeeded == readableBytes) {
+                this.iab.writeBytes(in.readBytes(this.lengthNeeded));
+                this.lengthNeeded = 0;
+                out.add(this.iab);
+                return;
+            }
+
+            this.iab.writeBytes(in.readBytes(readableBytes));
+            this.lengthNeeded = this.lengthNeeded - readableBytes;
+            in.release();
     }
 }

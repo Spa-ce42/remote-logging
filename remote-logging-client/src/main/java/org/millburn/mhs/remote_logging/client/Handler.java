@@ -28,6 +28,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
             byte[] b = this.rl.getName().getBytes();
             bb.writeInt(b.length);
             bb.writeBytes(b);
+            ctx.channel().write(bb.writerIndex());
             ctx.channel().write(new ChunkedStream(new ByteBufInputStream(bb)));
             System.out.println("Sending name: " + this.rl.getName());
         }
@@ -38,6 +39,7 @@ public class Handler extends ChannelInboundHandlerAdapter {
             byte[] c = "1234".getBytes();
             bc.writeInt(c.length);
             bc.writeBytes(c);
+            ctx.channel().write(bc.writerIndex());
             ctx.channel().write(new ChunkedStream(new ByteBufInputStream(bc)));
             System.out.println("Sending key: 1234");
         }

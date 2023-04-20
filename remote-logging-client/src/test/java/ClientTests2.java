@@ -10,12 +10,14 @@ public class ClientTests2 {
         RemoteLogger rl = new RemoteLogger("localhost", 6969, "logger");
         rl.connect();
         BufferedReader br = new BufferedReader(new FileReader("Ulysses by James Joyce.txt"));
+        new Scanner(System.in).nextLine();
+        StringBuilder sb = new StringBuilder();
         String s;
-
         while((s = br.readLine()) != null) {
-            rl.log(s);
+            sb.append(s);
         }
 
+        rl.log(sb);
         new Scanner(System.in).nextLine();
         rl.close();
     }

@@ -41,9 +41,9 @@ public class SuperServer implements Closeable {
                     @Override
                     public void initChannel(SocketChannel sc) {
                         ChannelPipeline cp = sc.pipeline();
-                        cp.addLast(new LengthFieldPrepender(4));
                         cp.addLast(new ChunkedWriteHandler());
-                        cp.addLast(new MessageDecoder(), new Server(SuperServer.this.faf, SuperServer.this.desiredKey));
+                        cp.addLast(new MessageDecoder(), new Server(SuperServer.this.faf, SuperServer.this.desiredKey)
+                        );
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)

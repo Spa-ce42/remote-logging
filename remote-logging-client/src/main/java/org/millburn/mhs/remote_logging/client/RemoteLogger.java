@@ -59,7 +59,6 @@ public class RemoteLogger implements Closeable {
                     @Override
                     public void initChannel(SocketChannel socketChannel) {
                         ChannelPipeline cp = socketChannel.pipeline();
-                        cp.addLast(new LengthFieldPrepender(4));
                         cp.addLast(new ChunkedWriteHandler());
                         cp.addLast(new Handler(RemoteLogger.this));
                     }

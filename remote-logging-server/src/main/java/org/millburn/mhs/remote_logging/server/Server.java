@@ -42,6 +42,8 @@ public class Server extends ChannelInboundHandlerAdapter {
             in.readBytes(b);
             this.loggerName = new String(b);
             this.fa = this.faf.createFileAppender(this.loggerName);
+
+            return false;
         }
 
         return true;
@@ -72,6 +74,7 @@ public class Server extends ChannelInboundHandlerAdapter {
 
             this.accepted = true;
             System.out.println("Connection established with: " + this.loggerName);
+            return false;
         }
 
         return true;
@@ -86,6 +89,7 @@ public class Server extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf in = (ByteBuf)msg;
+        System.out.println();
 
         if(!this.ensureLoggerNameSpecified(ctx, in)) {
             in.release();

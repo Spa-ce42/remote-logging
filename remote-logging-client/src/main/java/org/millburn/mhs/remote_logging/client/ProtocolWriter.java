@@ -30,6 +30,7 @@ public class ProtocolWriter extends OutputStream {
 
     public void beginMessage(byte type) {
         this.current = UnpooledByteBufAllocator.DEFAULT.directBuffer();
+        this.current.writeInt(0);
         this.current.writeByte(type);
     }
 
@@ -44,6 +45,10 @@ public class ProtocolWriter extends OutputStream {
     }
 
     public void endMessage() {
+        int oldWriterIndex = this.current.writerIndex();
+        this.current.writerIndex(0);
+        this.current.writeInt(oldWriterIndex - 4);
+        this.current.writerIndex(oldWriterIndex);
         this.byteBufs.add(new ChunkedStream(new ByteBufInputStream(this.current, true)));
     }
 

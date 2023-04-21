@@ -72,7 +72,7 @@ public class Main implements Closeable {
     }
 
     /**
-     * @param key a key that may or may not exist in the properties file
+     * @param key          a key that may or may not exist in the properties file
      * @param defaultValue what value will be returned if the said key does not exist
      * @return either the defaultValue of the key does not exist or the string value associated with the key
      */

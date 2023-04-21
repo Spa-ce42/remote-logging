@@ -17,7 +17,7 @@ public class Server extends ChannelInboundHandlerAdapter {
     private FileAppender fa;
 
     /**
-     * @param faf helps creates the FileAppender for the logger to log to
+     * @param faf        helps creates the FileAppender for the logger to log to
      * @param desiredKey the key that is needed for every incoming connection
      */
     public Server(FileAppenderFactory faf, String desiredKey) {

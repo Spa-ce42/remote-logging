@@ -1,9 +1,6 @@
 package org.millburn.mhs.remote_logging.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -13,8 +10,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.stream.ChunkedStream;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
@@ -27,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Describes a logger that logs content to a remotely connected server instead of locally
+ *
  * @author Keming Fei, Alex Kolodkin
  */
 public class RemoteLogger implements Closeable {
@@ -34,12 +30,12 @@ public class RemoteLogger implements Closeable {
     private final String ip;
     private final int port;
     private final Bootstrap b;
+    List<OnConnectedListener> onConnectedListeners;
     private String name;
     private ProtocolWriter ros;
-    List<OnConnectedListener> onConnectedListeners;
 
     /**
-     * @param ip the server's ip address
+     * @param ip   the server's ip address
      * @param port the server's port
      * @param name the name of the logger
      */
@@ -83,6 +79,7 @@ public class RemoteLogger implements Closeable {
 
     /**
      * Sets the name of the logger, changes it remotely if a connection is present
+     *
      * @param s the new name of the logger
      */
     public void setName(String s) {
@@ -97,8 +94,6 @@ public class RemoteLogger implements Closeable {
         System.out.println("Connection closed.");
         RemoteLogger.this.eventLoopGroup.schedule(RemoteLogger.this::connect, 1, TimeUnit.SECONDS);
     }
-
-    private final ChannelFutureListener closeFutureListener = this::listenToCloseFuture;
 
     private void listenToConnectFuture(ChannelFuture future) {
         //If the connection was not successful, reconnect
@@ -117,9 +112,7 @@ public class RemoteLogger implements Closeable {
         System.out.println("Connection established, creating RemoteOutputStream...");
         this.ros = new ProtocolWriter(channel);
         channel.closeFuture().addListener(RemoteLogger.this.closeFutureListener);
-    }
-
-    private final ChannelFutureListener cfl = this::listenToConnectFuture;
+    }    private final ChannelFutureListener closeFutureListener = this::listenToCloseFuture;
 
     /**
      * Tries to connect to the server, if the connection is refused, it attempts again in a short period of time
@@ -135,10 +128,11 @@ public class RemoteLogger implements Closeable {
      */
     public void attemptToConnect() {
         this.eventLoopGroup.execute(this::connect);
-    }
+    }    private final ChannelFutureListener cfl = this::listenToConnectFuture;
 
     /**
      * Logs a string
+     *
      * @param message a string
      */
     public void log(String message) {
@@ -165,6 +159,7 @@ public class RemoteLogger implements Closeable {
 
     /**
      * Logs the string value of an object
+     *
      * @param x an object
      */
     public void log(Object x) {
@@ -334,4 +329,8 @@ public class RemoteLogger implements Closeable {
             RemoteLogger.this.log(x);
         }
     }
+
+
+
+
 }

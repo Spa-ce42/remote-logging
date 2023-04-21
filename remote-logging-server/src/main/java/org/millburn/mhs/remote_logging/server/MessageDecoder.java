@@ -14,44 +14,43 @@ public class MessageDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
 
-            if(this.lengthNeeded <= 0) {
-                if(in.readableBytes() < 4) {
-                    return;
-                }
-
-                int length = in.readInt();
-
-                if(in.readableBytes() < length) {
-                    int readableBytes = in.readableBytes();
-                    this.iab = UnpooledByteBufAllocator.DEFAULT.directBuffer();
-                    this.iab.writeBytes(in.readBytes(readableBytes));
-                    this.lengthNeeded = length - readableBytes;
-                    return;
-                }
-
-                ByteBuf bb = in.readBytes(length);
-                bb.retain();
-                out.add(bb);
+        if(this.lengthNeeded <= 0) {
+            if(in.readableBytes() < 4) {
                 return;
             }
 
-            int readableBytes = in.readableBytes();
-            if(this.lengthNeeded < readableBytes) {
-                this.iab.writeBytes(in.readBytes(this.lengthNeeded));
-                this.lengthNeeded = 0;
-                out.add(this.iab);
+            int length = in.readInt();
+
+            if(in.readableBytes() < length) {
+                int readableBytes = in.readableBytes();
+                this.iab = UnpooledByteBufAllocator.DEFAULT.directBuffer();
+                this.iab.writeBytes(in.readBytes(readableBytes));
+                this.lengthNeeded = length - readableBytes;
                 return;
             }
 
-            if(this.lengthNeeded == readableBytes) {
-                this.iab.writeBytes(in.readBytes(this.lengthNeeded));
-                this.lengthNeeded = 0;
-                out.add(this.iab);
-                return;
-            }
+            ByteBuf bb = in.readBytes(length);
+            bb.retain();
+            out.add(bb);
+            return;
+        }
 
-            this.iab.writeBytes(in.readBytes(readableBytes));
-            this.lengthNeeded = this.lengthNeeded - readableBytes;
-            in.release();
+        int readableBytes = in.readableBytes();
+        if(this.lengthNeeded < readableBytes) {
+            this.iab.writeBytes(in.readBytes(this.lengthNeeded));
+            this.lengthNeeded = 0;
+            out.add(this.iab);
+            return;
+        }
+
+        if(this.lengthNeeded == readableBytes) {
+            this.iab.writeBytes(in.readBytes(this.lengthNeeded));
+            this.lengthNeeded = 0;
+            out.add(this.iab);
+            return;
+        }
+
+        this.iab.writeBytes(in.readBytes(readableBytes));
+        this.lengthNeeded = this.lengthNeeded - readableBytes;
     }
 }

@@ -50,8 +50,8 @@ public class FileAppenderFactory {
      * @param loggerName the name of the logger
      * @return a FileAppender with a new file opened, almost all files created will not have a name conflict
      * The name of the files contain
-     *  - The date, time, in UTC
-     *  - The name of the Logger
+     * - The date, time, in UTC
+     * - The name of the Logger
      */
     public FileAppender createFileAppender(String loggerName) {
         return new FileAppender((this.getLogFileDirectoryString() + (Instant.now() + "-" + loggerName).replace(':', '-') + ".log"));

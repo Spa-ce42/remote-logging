@@ -11,11 +11,28 @@ import java.time.Instant;
 public class FileAppenderFactory {
     private final File logFileDirectory;
 
+    public FileAppenderFactory(File f) {
+        if(f.isFile() && f.exists()) {
+            throw new IllegalArgumentException(f + " exists and is a file.");
+        }
+
+        if(!f.exists()) {
+            boolean b = f.mkdirs();
+
+            if(!b) {
+                throw new RuntimeException("Cannot create: " + f);
+            }
+        }
+
+        this.logFileDirectory = f;
+    }
+
     /**
      * @param s a directory that hosts all the log files
      */
     public FileAppenderFactory(String s) {
         File f = new File(s);
+        f = f.getAbsoluteFile();
 
         if(f.isFile() && f.exists()) {
             throw new IllegalArgumentException(f + " exists and is a file.");

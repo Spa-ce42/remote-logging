@@ -12,6 +12,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 import java.io.Closeable;
+import java.io.File;
 
 /**
  * Describes a server that listens to the port and dispatch upcoming connections to smaller servers to handle them.
@@ -29,7 +30,7 @@ public class SuperServer implements Closeable {
      * @param ip   an IPv4 without port
      * @param port a port
      */
-    public SuperServer(String ip, int port, String logFileDirectory, String desiredKey) {
+    public SuperServer(String ip, int port, File logFileDirectory, String desiredKey) {
         this.bossGroup = new NioEventLoopGroup();
         this.workerGroup = new NioEventLoopGroup();
         ServerBootstrap sb = new ServerBootstrap();

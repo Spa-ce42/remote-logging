@@ -8,11 +8,12 @@ import java.util.Scanner;
 public class ClientTests2 {
     public static void main(String[] args) throws IOException {
         RemoteLogger rl = new RemoteLogger("localhost", 6969, "logger");
-        rl.connect();
+        rl.attemptToConnect();
         BufferedReader br = new BufferedReader(new FileReader("Ulysses by James Joyce.txt"));
         new Scanner(System.in).nextLine();
         StringBuilder sb = new StringBuilder();
         String s;
+
         while((s = br.readLine()) != null) {
             sb.append(s);
         }

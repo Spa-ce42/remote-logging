@@ -26,6 +26,7 @@ public class ProtocolWriter extends OutputStream {
 
     public void setChannel(Channel c) {
         this.c = c;
+        this.flush();
     }
 
     public void beginMessage(byte type) {

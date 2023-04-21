@@ -110,7 +110,7 @@ public class RemoteLogger implements Closeable {
         //If successful, initialize ros, adds a close future listener in case the channel closes
         Channel channel = future.channel();
         System.out.println("Connection established, creating RemoteOutputStream...");
-        this.ros = new ProtocolWriter(channel);
+        this.ros.setChannel(channel);
         channel.closeFuture().addListener(RemoteLogger.this.closeFutureListener);
     }    private final ChannelFutureListener closeFutureListener = this::listenToCloseFuture;
 
@@ -120,7 +120,6 @@ public class RemoteLogger implements Closeable {
     public void connect() {
         ChannelFuture f = this.b.connect(this.ip, this.port);
         f.addListener(this.cfl);
-        f.syncUninterruptibly();
     }
 
     /**

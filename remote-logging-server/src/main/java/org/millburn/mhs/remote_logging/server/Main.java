@@ -1,6 +1,7 @@
 package org.millburn.mhs.remote_logging.server;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -26,17 +27,19 @@ public class Main implements Closeable {
             throw new UncheckedIOException(e);
         }
 
+        File workingDirectory = new File("").getAbsoluteFile();
         String ip = this.getRequiredStringProperty("ip");
         int port = this.getRequiredIntProperty("port");
         String logFileDirectory = this.getOptionalStringProperty("log_file_directory", "");
         String desiredKey = this.getOptionalStringProperty("desired_connection_key", "");
+        File lfd = new File(workingDirectory.getAbsolutePath() + File.separatorChar + logFileDirectory);
 
         System.out.println("ip: " + ip);
         System.out.println("port: " + port);
-        System.out.println("log_file_directory: " + logFileDirectory);
+        System.out.println("log_file_directory: " + lfd);
         System.out.println("desired_connection_key: " + desiredKey);
         System.out.println("Initializing the super server...");
-        this.ss = new SuperServer(ip, port, logFileDirectory, desiredKey);
+        this.ss = new SuperServer(ip, port, lfd, desiredKey);
     }
 
     public static void main(String[] args) {

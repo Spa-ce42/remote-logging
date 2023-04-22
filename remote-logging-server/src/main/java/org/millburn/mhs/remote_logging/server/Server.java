@@ -135,7 +135,7 @@ public class Server extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        LOG.warn(cause.getMessage(), cause);
     }
 
     /**

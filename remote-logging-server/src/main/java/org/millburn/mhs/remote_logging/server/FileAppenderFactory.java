@@ -75,6 +75,6 @@ public class FileAppenderFactory {
      * - The name of the Logger
      */
     public FileAppender createFileAppender(String loggerName) {
-        return new FileAppender((this.getLogFileDirectoryString() + (Instant.now() + "-" + loggerName).replace(':', '-') + ".log"));
+        return new FileAppender((this.getLogFileDirectoryString() + loggerName + "-" + (String.valueOf(Instant.now()).replace(':', '-')) + ".log"));
     }
 }

@@ -1,5 +1,8 @@
 package org.millburn.mhs.remote_logging.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.time.Instant;
 
@@ -9,6 +12,7 @@ import java.time.Instant;
  * @author Keming Fei
  */
 public class FileAppenderFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(FileAppenderFactory.class);
     private final File logFileDirectory;
 
     public FileAppenderFactory(File f) {

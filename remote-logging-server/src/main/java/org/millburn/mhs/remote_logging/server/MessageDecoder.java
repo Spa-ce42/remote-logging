@@ -4,10 +4,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class MessageDecoder extends ByteToMessageDecoder {
+    private static final Logger LOG = LoggerFactory.getLogger(MessageDecoder.class);
     private ByteBuf iab;
     private int lengthNeeded;
 

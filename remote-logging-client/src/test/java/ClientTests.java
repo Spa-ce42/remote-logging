@@ -41,7 +41,7 @@ public class ClientTests {
                 e.printStackTrace(rl.getAsPrintStream());
             }
 
-            byte[] bytes = (text + "\n").getBytes();
+            byte[] bytes = (text).getBytes();
             System.out.println("String Byte Length: " + bytes.length);
             rl.log(text);
         }

@@ -3,6 +3,8 @@ package org.millburn.mhs.remote_logging.server;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Individual servers created to handle each incoming connection
@@ -10,6 +12,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  * @author Keming Fei, Alex Kolodkin
  */
 public class Server extends ChannelInboundHandlerAdapter {
+    private static final Logger LOG = LoggerFactory.getLogger(Server.class);
     private final FileAppenderFactory faf;
     private final String desiredKey;
     private String loggerName;
@@ -32,7 +35,7 @@ public class Server extends ChannelInboundHandlerAdapter {
         if(this.loggerName == null) {
             byte messageType = in.readByte();
             if(messageType != MessageType.SPECIFY_NAME) {
-                System.err.println("The client did not send in a name! Abort!");
+                LOG.warn("The client did not send in a name! Abort!");
                 ctx.channel().close();
                 return false;
             }
@@ -57,7 +60,7 @@ public class Server extends ChannelInboundHandlerAdapter {
             byte messageType = in.readByte();
 
             if(messageType != MessageType.KEY) {
-                System.err.println("The client did not send in the key! Abort!");
+                LOG.warn("The client did not send in the key! Abort!");
                 ctx.channel().close();
                 return false;
             }
@@ -67,13 +70,13 @@ public class Server extends ChannelInboundHandlerAdapter {
             in.readBytes(b);
 
             if(!this.desiredKey.equals(new String(b))) {
-                System.err.println("The client did not send in the correct key! Abort!");
+                LOG.warn("The client did not send in the correct key! Abort!");
                 ctx.channel().close();
                 return false;
             }
 
             this.accepted = true;
-            System.out.println("Connection established with: " + this.loggerName);
+            LOG.info("Connection established with: " + this.loggerName);
             return false;
         }
 
@@ -89,7 +92,6 @@ public class Server extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf in = (ByteBuf)msg;
-        System.out.println();
 
         if(!this.ensureLoggerNameSpecified(ctx, in)) {
             in.release();
@@ -109,7 +111,7 @@ public class Server extends ChannelInboundHandlerAdapter {
                 byte[] b = new byte[stringLength];
                 in.readBytes(b);
                 this.loggerName = new String(b);
-                System.out.println(this.loggerName + ": # The client has changed its name to: " + this.loggerName);
+                LOG.info(this.loggerName + ": # The client has changed its name to: " + this.loggerName);
                 this.fa.appendLine("# The client has changed its name to: " + this.loggerName);
                 this.fa.close();
                 this.fa = this.faf.createFileAppender(this.loggerName);
@@ -121,7 +123,7 @@ public class Server extends ChannelInboundHandlerAdapter {
                 in.readBytes(b);
                 String s = new String(b);
                 this.fa.append(s);
-                System.out.print(s);
+                LOG.info(this.loggerName + ": " + s);
             }
         }
 
@@ -145,6 +147,6 @@ public class Server extends ChannelInboundHandlerAdapter {
             this.fa.close();
         }
 
-        System.out.println("Channel closed");
+        LOG.info("Channel closed");
     }
 }

@@ -10,6 +10,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.File;
@@ -20,6 +22,7 @@ import java.io.File;
  * @author Keming Fei
  */
 public class SuperServer implements Closeable {
+    private static final Logger LOG = LoggerFactory.getLogger(SuperServer.class);
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final ChannelFuture channelFuture;

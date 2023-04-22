@@ -1,5 +1,8 @@
 package org.millburn.mhs.remote_logging.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +16,7 @@ import java.util.Properties;
  * @author Keming Fei
  */
 public class Main implements Closeable {
+    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
     private final SuperServer ss;
     private final Properties metadata;
 
@@ -21,6 +25,7 @@ public class Main implements Closeable {
      */
     public Main(String propertiesPath) {
         this.metadata = new Properties();
+
         try {
             this.metadata.load(new FileInputStream(propertiesPath));
         } catch(IOException e) {
@@ -34,11 +39,11 @@ public class Main implements Closeable {
         String desiredKey = this.getOptionalStringProperty("desired_connection_key", "");
         File lfd = new File(workingDirectory.getAbsolutePath() + File.separatorChar + logFileDirectory);
 
-        System.out.println("ip: " + ip);
-        System.out.println("port: " + port);
-        System.out.println("log_file_directory: " + lfd);
-        System.out.println("desired_connection_key: " + desiredKey);
-        System.out.println("Initializing the super server...");
+        LOG.info("ip: " + ip);
+        LOG.info("port: " + port);
+        LOG.info("log_file_directory: " + lfd);
+        LOG.info("desired_connection_key: " + desiredKey);
+        LOG.info("Initializing the super server...");
         this.ss = new SuperServer(ip, port, lfd, desiredKey);
     }
 
@@ -47,7 +52,7 @@ public class Main implements Closeable {
         main.run();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             main.ss.close();
-            System.out.println("Exiting...");
+            LOG.info("Exiting...");
         }));
     }
 
@@ -87,7 +92,7 @@ public class Main implements Closeable {
      * The server begins to listen on the specified ip and port
      */
     public void run() {
-        System.out.println("Listening for connections...");
+        LOG.info("Listening for connections...");
         this.ss.listen();
     }
 

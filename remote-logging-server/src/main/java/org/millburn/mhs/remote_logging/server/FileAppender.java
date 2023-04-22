@@ -1,5 +1,8 @@
 package org.millburn.mhs.remote_logging.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
@@ -12,6 +15,7 @@ import java.io.UncheckedIOException;
  * @author Keming Fei
  */
 public class FileAppender implements Closeable {
+    private static final Logger LOG = LoggerFactory.getLogger(FileAppender.class);
     private final FileWriter fw;
 
     /**
@@ -19,7 +23,7 @@ public class FileAppender implements Closeable {
      */
     public FileAppender(String path) {
         File f = new File(path);
-        System.out.println(f.getAbsolutePath());
+        LOG.info(f.getAbsolutePath());
 
         try {
             this.fw = new FileWriter(f, true);

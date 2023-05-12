@@ -15,7 +15,7 @@ import java.util.concurrent.CountDownLatch;
 public class ClientTests {
     public static void main(String[] args) {
         CountDownLatch cdl = new CountDownLatch(1);
-        RemoteLogger rl = new RemoteLogger("localhost", 6969, "logger");
+        RemoteLogger rl = new RemoteLogger("localhost", 6970, "logger");
         rl.addOnConnectListener(rl1 -> {
             PrintStream ps = rl1.getAsPrintStream();
 //            System.setOut(ps);

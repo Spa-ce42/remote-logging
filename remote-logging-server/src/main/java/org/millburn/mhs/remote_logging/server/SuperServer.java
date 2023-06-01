@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.File;
+import java.time.ZonedDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Describes a server that listens to the port and dispatch upcoming connections to smaller servers to handle them.
@@ -26,7 +28,7 @@ public class SuperServer implements Closeable {
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final ChannelFuture channelFuture;
-    private final FileAppenderFactory faf;
+    private final FileAppender faf;
     private final String desiredKey;
 
     /**
@@ -52,7 +54,7 @@ public class SuperServer implements Closeable {
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
         this.channelFuture = sb.bind(ip, port);
-        this.faf = new FileAppenderFactory(logFileDirectory);
+        this.faf = new FileAppender(logFileDirectory.getPath(), ZonedDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0), TimeUnit.DAYS.toMillis(1));
         this.desiredKey = desiredKey;
     }
 

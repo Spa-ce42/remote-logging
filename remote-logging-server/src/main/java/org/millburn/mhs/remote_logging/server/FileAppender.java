@@ -1,76 +1,74 @@
 package org.millburn.mhs.remote_logging.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Describes an open log file waiting for strings to be appended
- *
- * @author Keming Fei
- */
-public class FileAppender implements Closeable {
-    private static final Logger LOG = LoggerFactory.getLogger(FileAppender.class);
-    private final FileWriter fw;
+public class FileAppender {
+    private final File dir;
+    private ScheduledExecutorService ses;
+    private final AtomicReference<FileWriter> fw;
 
-    /**
-     * @param path the path to a file, the file can either exist or not exist
-     */
-    public FileAppender(String path) {
-        File f = new File(path);
-        LOG.info(f.getAbsolutePath());
+
+    private void endCurrentStartNext() {
+        try {
+            if(this.fw.get() != null) {
+                this.fw.get().close();
+            }
+        } catch(IOException ignored) {
+            //Ignored, we will construct a new one anyway.
+        }
+
+        ZonedDateTime zdt = ZonedDateTime.now();
+        String fileName = zdt.getYear() + "-" + zdt.getMonthValue() + "-" + zdt.getDayOfMonth() + "-" + zdt.getHour() + "-" + zdt.getMinute() + "-" + zdt.getSecond() + "-" + zdt.getNano() / 1000000 + ".log";
 
         try {
-            this.fw = new FileWriter(f, true);
+            FileWriter fx = new FileWriter(new File(this.dir, fileName), true);
+            this.fw.set(fx);
         } catch(IOException e) {
-            throw new UncheckedIOException(e);
+            //Sucks to suck, maybe put out some errors somewhere.
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Append the string
-     *
-     * @param s the string
-     */
+    public FileAppender(String dir, ZonedDateTime initialDateTime, long delayMillis) {
+        this.fw = new AtomicReference<>();
+        this.dir = new File(dir);
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime nextRun = initialDateTime;
+
+        if(now.compareTo(nextRun) > 0) {
+            nextRun = nextRun.plusDays(1);
+        }
+
+        Duration d = Duration.between(now, nextRun);
+        long initialDelay = d.get(ChronoUnit.NANOS);
+
+        this.ses = Executors.newSingleThreadScheduledExecutor();
+        System.err.println(initialDelay);
+        System.err.println(initialDateTime);
+        this.ses.scheduleAtFixedRate(this::endCurrentStartNext, TimeUnit.NANOSECONDS.toMillis(initialDelay), delayMillis, TimeUnit.MILLISECONDS);
+    }
+
     public void append(String s) {
+
         try {
-            this.fw.append(s);
+            System.err.println("Appending: " + s);
+            this.fw.get().append(s);
         } catch(IOException e) {
-            throw new UncheckedIOException(e);
+            //Probably put more errors somewhere
         }
     }
 
-    /**
-     * Append the string with a new line
-     *
-     * @param s the string
-     */
     public void appendLine(String s) {
         this.append(s);
         this.append(System.lineSeparator());
-    }
-
-    /**
-     * Flushes the content into the file
-     *
-     * @throws IOException if an IO error occurs
-     */
-    public void flush() throws IOException {
-        this.fw.flush();
-    }
-
-    /**
-     * Closes the file
-     *
-     * @throws IOException if an IO error occur
-     */
-    @Override
-    public void close() throws IOException {
-        this.fw.close();
     }
 }

@@ -13,18 +13,17 @@ import org.slf4j.LoggerFactory;
  */
 public class Server extends ChannelInboundHandlerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
-    private final FileAppenderFactory faf;
+    private final FileAppender fa;
     private final String desiredKey;
     private String loggerName;
     private boolean accepted = false;
-    private FileAppender fa;
 
     /**
-     * @param faf        helps creates the FileAppender for the logger to log to
+     * @param fa         The file appender
      * @param desiredKey the key that is needed for every incoming connection
      */
-    public Server(FileAppenderFactory faf, String desiredKey) {
-        this.faf = faf;
+    public Server(FileAppender fa, String desiredKey) {
+        this.fa = fa;
         this.desiredKey = desiredKey;
     }
 
@@ -44,8 +43,6 @@ public class Server extends ChannelInboundHandlerAdapter {
             byte[] b = new byte[stringLength];
             in.readBytes(b);
             this.loggerName = new String(b);
-            this.fa = this.faf.createFileAppender(this.loggerName);
-
             return false;
         }
 
@@ -113,8 +110,6 @@ public class Server extends ChannelInboundHandlerAdapter {
                 this.loggerName = new String(b);
                 LOG.info(this.loggerName + ": # The client has changed its name to: " + this.loggerName);
                 this.fa.appendLine("# The client has changed its name to: " + this.loggerName);
-                this.fa.close();
-                this.fa = this.faf.createFileAppender(this.loggerName);
             }
 
             case MessageType.LOG -> {
@@ -142,11 +137,7 @@ public class Server extends ChannelInboundHandlerAdapter {
      * Closes the FileAppender when the channel becomes inactive
      */
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        if(this.fa != null) {
-            this.fa.close();
-        }
-
+    public void channelInactive(ChannelHandlerContext ctx) {
         LOG.info("Channel closed");
     }
 }
